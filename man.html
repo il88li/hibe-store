@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
+        /* نفس الأنماط السابقة مع تعديلات بسيطة */
         * {
             margin: 0;
             padding: 0;
@@ -238,38 +239,73 @@
         setTimeout(() => t.style.opacity = "0", 1800);
     }
 
-    function loadProductsFromStorage() {
-        const stored = localStorage.getItem("hibe_products");
-        if (stored) {
-            products = JSON.parse(stored);
-        } else {
-            // بيانات افتراضية كاملة
-            products = [
-                { id: 1, name: "قميص رجالي كلاسيك", category: "رجالي", price: 99, icon: "bi bi-shirt" },
-                { id: 2, name: "فستان كتان أنيق", category: "نسائي", price: 149, icon: "bi bi-gender-female" },
-                { id: 3, name: "طقم ولادي رياضي", category: "ولادي", price: 79, icon: "bi bi-emoji-smile" },
-                { id: 4, name: "تنورة بناتي مكشكشة", category: "بناتي", price: 89, icon: "bi bi-suit-heart" },
-                { id: 5, name: "حذاء رياضي جلد", category: "جزم", price: 199, icon: "bi bi-shoes" },
-                { id: 6, name: "حقيبة ظهر جلدية", category: "شنط", price: 129, icon: "bi bi-bag" },
-                { id: 7, name: "جاكيت جينز ثقيل", category: "جواكت", price: 189, icon: "bi bi-vest" },
-                { id: 8, name: "تيشيرت صيفي قطني", category: "ملابس صيفية", price: 59, icon: "bi bi-sun" },
-                { id: 9, name: "بنطلون كارجو عسكري", category: "رجالي", price: 119, icon: "bi bi-bag-plus" },
-                { id: 10, name: "بلوزة شيفون شفاف", category: "نسائي", price: 109, icon: "bi bi-flower1" },
-                { id: 11, name: "حذاء ولادي خفيف", category: "جزم", price: 99, icon: "bi bi-emoji-smile" },
-                { id: 12, name: "شنطة كتف سهرة", category: "شنط", price: 159, icon: "bi bi-gem" },
-                { id: 13, name: "جاكيت بومبر واقي", category: "جواكت", price: 229, icon: "bi bi-thermometer-snow" },
-                { id: 14, name: "فستان صيفي طويل", category: "ملابس صيفية", price: 139, icon: "bi bi-brightness-alt-high" },
-                { id: 15, name: "بدلة بناتي كتان", category: "بناتي", price: 129, icon: "bi bi-asterisk" },
-                { id: 16, name: "طقم ولادي شتوي", category: "ولادي", price: 99, icon: "bi bi-snow2" }
-            ];
-            localStorage.setItem("hibe_products", JSON.stringify(products));
+    // جلب المنتجات من الخادم
+    async function fetchProducts() {
+        try {
+            const response = await fetch('/api/products');
+            if (!response.ok) throw new Error('فشل في جلب المنتجات');
+            products = await response.json();
+            renderTable();
+        } catch (error) {
+            console.error(error);
+            showToast("حدث خطأ في تحميل المنتجات");
         }
-        renderTable();
     }
 
-    function saveProductsToStorage() {
-        localStorage.setItem("hibe_products", JSON.stringify(products));
-        renderTable();
+    // إضافة منتج جديد
+    async function addProduct(product) {
+        try {
+            const response = await fetch('/api/products', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(product)
+            });
+            if (!response.ok) throw new Error('فشل في إضافة المنتج');
+            const newProduct = await response.json();
+            products.push(newProduct);
+            renderTable();
+            showToast("تمت إضافة المنتج بنجاح");
+        } catch (error) {
+            console.error(error);
+            showToast("حدث خطأ أثناء الإضافة");
+        }
+    }
+
+    // تعديل منتج
+    async function updateProduct(id, updatedData) {
+        try {
+            const response = await fetch(`/api/products/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatedData)
+            });
+            if (!response.ok) throw new Error('فشل في تعديل المنتج');
+            const updated = await response.json();
+            const index = products.findIndex(p => p.id === id);
+            if (index !== -1) products[index] = updated;
+            renderTable();
+            showToast("تم تعديل المنتج بنجاح");
+        } catch (error) {
+            console.error(error);
+            showToast("حدث خطأ أثناء التعديل");
+        }
+    }
+
+    // حذف منتج
+    async function deleteProduct(id) {
+        if (!confirm("هل أنت متأكد من حذف هذا المنتج؟")) return;
+        try {
+            const response = await fetch(`/api/products/${id}`, {
+                method: 'DELETE'
+            });
+            if (!response.ok) throw new Error('فشل في حذف المنتج');
+            products = products.filter(p => p.id !== id);
+            renderTable();
+            showToast("تم حذف المنتج بنجاح");
+        } catch (error) {
+            console.error(error);
+            showToast("حدث خطأ أثناء الحذف");
+        }
     }
 
     function renderTable() {
@@ -310,15 +346,16 @@
         }
     }
 
-    function deleteProduct(id) {
-        if (confirm("هل أنت متأكد من حذف هذا المنتج؟")) {
-            products = products.filter(p => p.id !== id);
-            saveProductsToStorage();
-            showToast("تم حذف المنتج بنجاح");
-        }
+    function closeModal() {
+        document.getElementById("productModal").classList.remove("show");
+        editingId = null;
+        document.getElementById("prodName").value = "";
+        document.getElementById("prodCategory").value = "رجالي";
+        document.getElementById("prodPrice").value = "";
+        document.getElementById("prodIcon").value = "bi bi-tag";
     }
 
-    function saveProduct() {
+    function saveProductHandler() {
         const name = document.getElementById("prodName").value.trim();
         const category = document.getElementById("prodCategory").value;
         const price = parseFloat(document.getElementById("prodPrice").value);
@@ -330,31 +367,12 @@
         }
 
         if (editingId !== null) {
-            // تعديل
-            const index = products.findIndex(p => p.id === editingId);
-            if (index !== -1) {
-                products[index] = { ...products[index], name, category, price, icon };
-                saveProductsToStorage();
-                showToast("تم تعديل المنتج");
-            }
-            editingId = null;
+            updateProduct(editingId, { name, category, price, icon });
+            closeModal();
         } else {
-            // إضافة جديد
-            const newId = Date.now();
-            products.push({ id: newId, name, category, price, icon });
-            saveProductsToStorage();
-            showToast("تم إضافة المنتج");
+            addProduct({ name, category, price, icon });
+            closeModal();
         }
-        closeModal();
-    }
-
-    function closeModal() {
-        document.getElementById("productModal").classList.remove("show");
-        editingId = null;
-        document.getElementById("prodName").value = "";
-        document.getElementById("prodCategory").value = "رجالي";
-        document.getElementById("prodPrice").value = "";
-        document.getElementById("prodIcon").value = "bi bi-tag";
     }
 
     function setupDarkMode() {
@@ -370,8 +388,8 @@
         toggleBtn.innerHTML = isDark ? '<i class="bi bi-sun"></i> الوضع النهاري' : '<i class="bi bi-moon"></i> الوضع الليلي';
     }
 
-    function init() {
-        loadProductsFromStorage();
+    async function init() {
+        await fetchProducts();
         setupDarkMode();
         document.getElementById("addNewProductBtn").addEventListener("click", () => {
             editingId = null;
@@ -382,7 +400,7 @@
             document.getElementById("prodIcon").value = "bi bi-tag";
             document.getElementById("productModal").classList.add("show");
         });
-        document.getElementById("saveProductBtn").addEventListener("click", saveProduct);
+        document.getElementById("saveProductBtn").addEventListener("click", saveProductHandler);
         document.getElementById("closeModalBtn").addEventListener("click", closeModal);
         window.addEventListener("click", (e) => {
             if (e.target === document.getElementById("productModal")) closeModal();
