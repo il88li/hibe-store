@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>لوحة الإدارة | HIBE STORE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: linear-gradient(145deg, #e9e0d8, #dad0c6);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 250, 245, 0.85);
+            backdrop-filter: blur(8px);
+            border-radius: 32px;
+            padding: 20px;
+            box-shadow: 0 20px 35px rgba(0,0,0,0.1);
+        }
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        h1 {
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, #5f3f2e, #b58260);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+        .theme-toggle-admin {
+            background: #e2d4ca;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .add-product-btn {
+            background: #9b6e50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .products-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(255,255,245,0.7);
+            border-radius: 24px;
+            overflow: hidden;
+        }
+        .products-table th, .products-table td {
+            padding: 12px 8px;
+            text-align: center;
+            border-bottom: 1px solid #ddd0c2;
+        }
+        .products-table th {
+            background: #e7dbcf;
+            color: #4f3728;
+        }
+        .action-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin: 0 5px;
+            color: #8b694f;
+        }
+        .edit-btn { color: #2c7a4a; }
+        .delete-btn { color: #b14a3a; }
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(6px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            visibility: hidden;
+            opacity: 0;
+            transition: 0.2s;
+        }
+        .modal.show {
+            visibility: visible;
+            opacity: 1;
+        }
+        .modal-content {
+            background: #fffcf7;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 36px;
+            padding: 24px;
+        }
+        .modal-content h3 {
+            margin-bottom: 20px;
+        }
+        .modal-content input, .modal-content select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #e0cfc0;
+            border-radius: 30px;
+            font-family: 'Tajawal';
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 15px;
+        }
+        .modal-buttons button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .save-btn {
+            background: #9b6e50;
+            color: white;
+        }
+        .cancel-btn {
+            background: #d1c0b0;
+        }
+        body.dark-mode {
+            background: #2a2420;
+        }
+        body.dark-mode .admin-container {
+            background: #302a25;
+            color: #f0e2d8;
+        }
+        body.dark-mode .products-table {
+            background: #3f3630;
+        }
+        body.dark-mode .products-table th {
+            background: #5a4a3e;
+            color: #f0e2d8;
+        }
+        .toast-msg {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2d241fe6;
+            color: white;
+            padding: 8px 18px;
+            border-radius: 60px;
+            font-size: 0.8rem;
+            opacity: 0;
+            transition: 0.2s;
+            pointer-events: none;
+            z-index: 1100;
+        }
+        @media (max-width: 700px) {
+            .products-table th, .products-table td {
+                font-size: 0.7rem;
+                padding: 8px 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="admin-container">
+    <div class="admin-header">
+        <h1><i class="bi bi-grid"></i> لوحة إدارة المتجر</h1>
+        <div>
+            <button class="theme-toggle-admin" id="darkModeAdmin"><i class="bi bi-moon"></i> الوضع الليلي</button>
+            <button class="add-product-btn" id="addNewProductBtn"><i class="bi bi-plus-lg"></i> إضافة منتج</button>
+        </div>
+    </div>
+    <div style="overflow-x: auto;">
+        <table class="products-table" id="productsTable">
+            <thead>
+                <tr><th>#</th><th>المنتج</th><th>التصنيف</th><th>السعر (ر.س)</th><th>الأيقونة</th><th>إجراءات</th></tr>
+            </thead>
+            <tbody id="productsTableBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<div id="productModal" class="modal">
+    <div class="modal-content">
+        <h3 id="modalTitle">إضافة منتج جديد</h3>
+        <input type="text" id="prodName" placeholder="اسم المنتج">
+        <select id="prodCategory">
+            <option value="رجالي">رجالي</option>
+            <option value="نسائي">نسائي</option>
+            <option value="ولادي">ولادي</option>
+            <option value="بناتي">بناتي</option>
+            <option value="جزم">جزم</option>
+            <option value="شنط">شنط</option>
+            <option value="جواكت">جواكت</option>
+            <option value="ملابس صيفية">ملابس صيفية</option>
+        </select>
+        <input type="number" id="prodPrice" placeholder="السعر">
+        <input type="text" id="prodIcon" placeholder="أيقونة (مثلاً bi bi-shirt)" value="bi bi-tag">
+        <div class="modal-buttons">
+            <button class="save-btn" id="saveProductBtn">حفظ</button>
+            <button class="cancel-btn" id="closeModalBtn">إلغاء</button>
+        </div>
+    </div>
+</div>
+
+<div id="toastMsg" class="toast-msg"></div>
+
+<script>
+    let products = [];
+    let editingId = null;
+
+    function showToast(msg) {
+        const t = document.getElementById("toastMsg");
+        t.innerText = msg;
+        t.style.opacity = "1";
+        setTimeout(() => t.style.opacity = "0", 1800);
+    }
+
+    function loadProductsFromStorage() {
+        const stored = localStorage.getItem("hibe_products");
+        if (stored) {
+            products = JSON.parse(stored);
+        } else {
+            // بيانات افتراضية كاملة
+            products = [
+                { id: 1, name: "قميص رجالي كلاسيك", category: "رجالي", price: 99, icon: "bi bi-shirt" },
+                { id: 2, name: "فستان كتان أنيق", category: "نسائي", price: 149, icon: "bi bi-gender-female" },
+                { id: 3, name: "طقم ولادي رياضي", category: "ولادي", price: 79, icon: "bi bi-emoji-smile" },
+                { id: 4, name: "تنورة بناتي مكشكشة", category: "بناتي", price: 89, icon: "bi bi-suit-heart" },
+                { id: 5, name: "حذاء رياضي جلد", category: "جزم", price: 199, icon: "bi bi-shoes" },
+                { id: 6, name: "حقيبة ظهر جلدية", category: "شنط", price: 129, icon: "bi bi-bag" },
+                { id: 7, name: "جاكيت جينز ثقيل", category: "جواكت", price: 189, icon: "bi bi-vest" },
+                { id: 8, name: "تيشيرت صيفي قطني", category: "ملابس صيفية", price: 59, icon: "bi bi-sun" },
+                { id: 9, name: "بنطلون كارجو عسكري", category: "رجالي", price: 119, icon: "bi bi-bag-plus" },
+                { id: 10, name: "بلوزة شيفون شفاف", category: "نسائي", price: 109, icon: "bi bi-flower1" },
+                { id: 11, name: "حذاء ولادي خفيف", category: "جزم", price: 99, icon: "bi bi-emoji-smile" },
+                { id: 12, name: "شنطة كتف سهرة", category: "شنط", price: 159, icon: "bi bi-gem" },
+                { id: 13, name: "جاكيت بومبر واقي", category: "جواكت", price: 229, icon: "bi bi-thermometer-snow" },
+                { id: 14, name: "فستان صيفي طويل", category: "ملابس صيفية", price: 139, icon: "bi bi-brightness-alt-high" },
+                { id: 15, name: "بدلة بناتي كتان", category: "بناتي", price: 129, icon: "bi bi-asterisk" },
+                { id: 16, name: "طقم ولادي شتوي", category: "ولادي", price: 99, icon: "bi bi-snow2" }
+            ];
+            localStorage.setItem("hibe_products", JSON.stringify(products));
+        }
+        renderTable();
+    }
+
+    function saveProductsToStorage() {
+        localStorage.setItem("hibe_products", JSON.stringify(products));
+        renderTable();
+    }
+
+    function renderTable() {
+        const tbody = document.getElementById("productsTableBody");
+        if (!tbody) return;
+        tbody.innerHTML = "";
+        products.forEach((prod, idx) => {
+            const row = tbody.insertRow();
+            row.insertCell(0).innerText = idx + 1;
+            row.insertCell(1).innerText = prod.name;
+            row.insertCell(2).innerText = prod.category;
+            row.insertCell(3).innerText = prod.price;
+            row.insertCell(4).innerHTML = `<i class="${prod.icon}"></i> ${prod.icon}`;
+            const actions = row.insertCell(5);
+            const editBtn = document.createElement("button");
+            editBtn.innerHTML = '<i class="bi bi-pencil-square"></i>';
+            editBtn.className = "action-btn edit-btn";
+            editBtn.onclick = () => openEditModal(prod.id);
+            const deleteBtn = document.createElement("button");
+            deleteBtn.innerHTML = '<i class="bi bi-trash3"></i>';
+            deleteBtn.className = "action-btn delete-btn";
+            deleteBtn.onclick = () => deleteProduct(prod.id);
+            actions.appendChild(editBtn);
+            actions.appendChild(deleteBtn);
+        });
+    }
+
+    function openEditModal(id) {
+        const prod = products.find(p => p.id === id);
+        if (prod) {
+            editingId = id;
+            document.getElementById("modalTitle").innerText = "تعديل المنتج";
+            document.getElementById("prodName").value = prod.name;
+            document.getElementById("prodCategory").value = prod.category;
+            document.getElementById("prodPrice").value = prod.price;
+            document.getElementById("prodIcon").value = prod.icon;
+            document.getElementById("productModal").classList.add("show");
+        }
+    }
+
+    function deleteProduct(id) {
+        if (confirm("هل أنت متأكد من حذف هذا المنتج؟")) {
+            products = products.filter(p => p.id !== id);
+            saveProductsToStorage();
+            showToast("تم حذف المنتج بنجاح");
+        }
+    }
+
+    function saveProduct() {
+        const name = document.getElementById("prodName").value.trim();
+        const category = document.getElementById("prodCategory").value;
+        const price = parseFloat(document.getElementById("prodPrice").value);
+        const icon = document.getElementById("prodIcon").value.trim() || "bi bi-tag";
+
+        if (!name || isNaN(price) || price <= 0) {
+            showToast("يرجى إدخال اسم وسعر صحيح");
+            return;
+        }
+
+        if (editingId !== null) {
+            // تعديل
+            const index = products.findIndex(p => p.id === editingId);
+            if (index !== -1) {
+                products[index] = { ...products[index], name, category, price, icon };
+                saveProductsToStorage();
+                showToast("تم تعديل المنتج");
+            }
+            editingId = null;
+        } else {
+            // إضافة جديد
+            const newId = Date.now();
+            products.push({ id: newId, name, category, price, icon });
+            saveProductsToStorage();
+            showToast("تم إضافة المنتج");
+        }
+        closeModal();
+    }
+
+    function closeModal() {
+        document.getElementById("productModal").classList.remove("show");
+        editingId = null;
+        document.getElementById("prodName").value = "";
+        document.getElementById("prodCategory").value = "رجالي";
+        document.getElementById("prodPrice").value = "";
+        document.getElementById("prodIcon").value = "bi bi-tag";
+    }
+
+    function setupDarkMode() {
+        const isDark = localStorage.getItem("admin_dark") === "true";
+        if (isDark) document.body.classList.add("dark-mode");
+        const toggleBtn = document.getElementById("darkModeAdmin");
+        toggleBtn.addEventListener("click", () => {
+            document.body.classList.toggle("dark-mode");
+            const dark = document.body.classList.contains("dark-mode");
+            localStorage.setItem("admin_dark", dark);
+            toggleBtn.innerHTML = dark ? '<i class="bi bi-sun"></i> الوضع النهاري' : '<i class="bi bi-moon"></i> الوضع الليلي';
+        });
+        toggleBtn.innerHTML = isDark ? '<i class="bi bi-sun"></i> الوضع النهاري' : '<i class="bi bi-moon"></i> الوضع الليلي';
+    }
+
+    function init() {
+        loadProductsFromStorage();
+        setupDarkMode();
+        document.getElementById("addNewProductBtn").addEventListener("click", () => {
+            editingId = null;
+            document.getElementById("modalTitle").innerText = "إضافة منتج جديد";
+            document.getElementById("prodName").value = "";
+            document.getElementById("prodCategory").value = "رجالي";
+            document.getElementById("prodPrice").value = "";
+            document.getElementById("prodIcon").value = "bi bi-tag";
+            document.getElementById("productModal").classList.add("show");
+        });
+        document.getElementById("saveProductBtn").addEventListener("click", saveProduct);
+        document.getElementById("closeModalBtn").addEventListener("click", closeModal);
+        window.addEventListener("click", (e) => {
+            if (e.target === document.getElementById("productModal")) closeModal();
+        });
+    }
+    init();
+</script>
+</body>
+</html>
