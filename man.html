@@ -33,13 +33,14 @@
             font-size: 1.4rem;
             color: #3a2a20;
         }
-        .tabs {
+        .tabs-list {
             display: flex;
             gap: 6px;
             border-bottom: 1px solid #ddd0c2;
             padding-bottom: 6px;
             margin-bottom: 16px;
             flex-wrap: wrap;
+            list-style: none;
         }
         .tab-btn {
             background: none;
@@ -53,6 +54,7 @@
             align-items: center;
             gap: 4px;
             color: #3a2a20;
+            font-family: inherit;
         }
         .tab-btn.active {
             background: #b58260;
@@ -60,25 +62,135 @@
         }
         .panel { display: none; }
         .panel.active { display: block; }
-        table { width: 100%; border-collapse: collapse; background: rgba(255,255,245,0.7); border-radius: 20px; overflow: hidden; font-size: 0.8rem; }
-        th, td { padding: 8px 6px; border-bottom: 1px solid #ddd0c2; text-align: center; }
-        th { background: #e7dbcf; color: #3a2a20; }
-        .action-btn { background: none; border: none; font-size: 1rem; cursor: pointer; margin: 0 3px; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(255,255,245,0.7);
+            border-radius: 20px;
+            overflow: hidden;
+            font-size: 0.8rem;
+        }
+        th, td {
+            padding: 8px 6px;
+            border-bottom: 1px solid #ddd0c2;
+            text-align: center;
+        }
+        th {
+            background: #e7dbcf;
+            color: #3a2a20;
+        }
+        .action-btn {
+            background: none;
+            border: none;
+            font-size: 1rem;
+            cursor: pointer;
+            margin: 0 3px;
+        }
         .edit-btn { color: #2c7a4a; }
         .delete-btn { color: #b14a3a; }
-        .add-btn { background: #9b6e50; color: white; border: none; padding: 5px 12px; border-radius: 30px; margin-bottom: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; font-size: 0.8rem; }
-        .status-select { padding: 2px 6px; border-radius: 20px; border: 1px solid #ccc; font-size: 0.7rem; }
-        .modal { position: fixed; top:0;left:0;width:100%;height:100%; background:rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1000; visibility: hidden; opacity: 0; transition: 0.2s; }
-        .modal.show { visibility: visible; opacity: 1; }
-        .modal-content { background: #fffcf7; width: 90%; max-width: 500px; border-radius: 28px; padding: 20px; }
-        .modal-content input, .modal-content select, .modal-content textarea { width: 100%; padding: 8px; margin-bottom: 12px; border-radius: 30px; border: 1px solid #e0cfc0; font-size: 0.8rem; }
-        .image-preview { margin-bottom: 12px; text-align: center; }
-        .image-preview img { max-width: 100px; max-height: 100px; border-radius: 12px; border: 1px solid #ddd; }
-        .modal-buttons { display: flex; gap: 8px; margin-top: 12px; }
-        .save-btn { background: #9b6e50; color: white; flex:1; border: none; border-radius: 40px; padding: 8px; }
-        .cancel-btn { background: #d1c0b0; flex:1; border: none; border-radius: 40px; }
-        .toast-msg { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #2d241fe6; color: white; padding: 5px 12px; border-radius: 40px; font-size: 0.7rem; opacity: 0; transition: 0.2s; pointer-events: none; z-index: 1100; }
-        /* صفحة "مناطق النقل" */
+        .add-btn {
+            background: #9b6e50;
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 30px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.8rem;
+            font-family: inherit;
+        }
+        .status-select {
+            padding: 2px 6px;
+            border-radius: 20px;
+            border: 1px solid #ccc;
+            font-size: 0.7rem;
+        }
+        .modal {
+            position: fixed;
+            top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            visibility: hidden;
+            opacity: 0;
+            transition: 0.2s;
+        }
+        .modal.show {
+            visibility: visible;
+            opacity: 1;
+        }
+        .modal-content {
+            background: #fffcf7;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 28px;
+            padding: 20px;
+        }
+        .modal-content input,
+        .modal-content select,
+        .modal-content textarea {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 12px;
+            border-radius: 30px;
+            border: 1px solid #e0cfc0;
+            font-size: 0.8rem;
+            font-family: inherit;
+        }
+        .image-preview {
+            margin-bottom: 12px;
+            text-align: center;
+        }
+        .image-preview img {
+            max-width: 100px;
+            max-height: 100px;
+            border-radius: 12px;
+            border: 1px solid #ddd;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .save-btn {
+            background: #9b6e50;
+            color: white;
+            flex:1;
+            border: none;
+            border-radius: 40px;
+            padding: 8px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .cancel-btn {
+            background: #d1c0b0;
+            flex:1;
+            border: none;
+            border-radius: 40px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .toast-msg {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2d241fe6;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            opacity: 0;
+            transition: 0.2s;
+            pointer-events: none;
+            z-index: 1100;
+        }
         .region-card {
             background: rgba(255,250,240,0.8);
             border-radius: 20px;
@@ -100,7 +212,8 @@
             justify-content: center;
         }
         body.dark-mode { background: #2a2420; }
-        body.dark-mode .admin-container, body.dark-mode .modal-content { background: #322a25; color: #f0e2d8; }
+        body.dark-mode .admin-container,
+        body.dark-mode .modal-content { background: #322a25; color: #f0e2d8; }
         body.dark-mode .admin-header h1 { color: #f0e2d8; }
         body.dark-mode .tab-btn { color: #f0e2d8; }
         body.dark-mode .region-card { background: #3f3630; }
@@ -108,90 +221,367 @@
     </style>
 </head>
 <body>
-<div class="admin-container">
-    <div class="admin-header">
-        <h1><i class="bi bi-grid"></i> لوحة الإدارة</h1>
-        <button id="darkModeAdmin" class="add-btn" style="background:#6c4d38;"><i class="bi bi-moon"></i> ليلي</button>
+    <div class="admin-container">
+        <header class="admin-header">
+            <h1><i class="bi bi-grid"></i> لوحة الإدارة</h1>
+            <button id="darkModeAdmin" class="add-btn" style="background:#6c4d38;"><i class="bi bi-moon"></i> ليلي</button>
+        </header>
+
+        <nav>
+            <ul class="tabs-list">
+                <li><button class="tab-btn active" data-tab="products">📦 المنتجات</button></li>
+                <li><button class="tab-btn" data-tab="categories">🏷️ التصنيفات</button></li>
+                <li><button class="tab-btn" data-tab="orders">📋 الطلبات</button></li>
+                <li><button class="tab-btn" data-tab="regions">🚚 مناطق النقل</button></li>
+            </ul>
+        </nav>
+
+        <main>
+            <section id="productsPanel" class="panel active">
+                <button id="addProductBtn" class="add-btn"><i class="bi bi-plus"></i> إضافة منتج</button>
+                <div style="overflow-x:auto;">
+                    <table>
+                        <thead>
+                            <tr><th>#</th><th>المنتج</th><th>التصنيف</th><th>السعر</th><th>الصورة</th><th>إجراءات</th></tr>
+                        </thead>
+                        <tbody id="productsTbody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="categoriesPanel" class="panel">
+                <button id="addCategoryBtn" class="add-btn"><i class="bi bi-plus"></i> إضافة تصنيف</button>
+                <div style="overflow-x:auto;">
+                    <table>
+                        <thead><tr><th>#</th><th>اسم التصنيف</th><th>إجراءات</th></tr></thead>
+                        <tbody id="categoriesTbody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="ordersPanel" class="panel">
+                <div style="overflow-x:auto;">
+                    <table>
+                        <thead>
+                            <tr><th>#</th><th>العميل</th><th>الجوال</th><th>المنتجات</th><th>الإجمالي</th><th>الحالة</th><th>التاريخ</th><th></th></tr>
+                        </thead>
+                        <tbody id="ordersTbody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="regionsPanel" class="panel">
+                <div class="region-card">
+                    <img id="regionImagePreview" src="https://img.sanishtech.com/u/130d1b77889fb2e2f250198b86ae6a96.png" alt="منطقة النقل">
+                    <p id="regionTextPreview">التوصيل متاح في صنعاء فقط</p>
+                    <div class="region-controls">
+                        <button id="editRegionBtn" class="add-btn"><i class="bi bi-pencil"></i> تعديل</button>
+                    </div>
+                </div>
+            </section>
+        </main>
     </div>
-    <div class="tabs">
-        <button class="tab-btn active" data-tab="products">📦 المنتجات</button>
-        <button class="tab-btn" data-tab="categories">🏷️ التصنيفات</button>
-        <button class="tab-btn" data-tab="orders">📋 الطلبات</button>
-        <button class="tab-btn" data-tab="regions">🚚 مناطق النقل</button>
-    </div>
-    <div id="productsPanel" class="panel active">
-        <button id="addProductBtn" class="add-btn"><i class="bi bi-plus"></i> إضافة منتج</button>
-        <div style="overflow-x:auto;"><table id="productsTable"><thead><tr><th>#</th><th>المنتج</th><th>التصنيف</th><th>السعر</th><th>الصورة</th><th>إجراءات</th></tr></thead><tbody id="productsTbody"></tbody></table></div>
-    </div>
-    <div id="categoriesPanel" class="panel">
-        <button id="addCategoryBtn" class="add-btn"><i class="bi bi-plus"></i> إضافة تصنيف</button>
-        <div style="overflow-x:auto;"><table id="categoriesTable"><thead><tr><th>#</th><th>اسم التصنيف</th><th>إجراءات</th></tr></thead><tbody id="categoriesTbody"></tbody></table></div>
-    </div>
-    <div id="ordersPanel" class="panel">
-        <div style="overflow-x:auto;"><table id="ordersTable"><thead><tr><th>#</th><th>العميل</th><th>الجوال</th><th>المنتجات</th><th>الإجمالي</th><th>الحالة</th><th>التاريخ</th><th></th></tr></thead><tbody id="ordersTbody"></tbody></table></div>
-    </div>
-    <div id="regionsPanel" class="panel">
-        <div class="region-card">
-            <img id="regionImagePreview" src="https://img.sanishtech.com/u/130d1b77889fb2e2f250198b86ae6a96.png" alt="منطقة النقل">
-            <p id="regionTextPreview">التوصيل متاح في صنعاء فقط</p>
-            <div class="region-controls">
-                <button id="editRegionBtn" class="add-btn"><i class="bi bi-pencil"></i> تعديل</button>
+
+    <div id="toastMsg" class="toast-msg"></div>
+
+    <div id="genericModal" class="modal">
+        <div class="modal-content">
+            <h3 id="modalTitle"></h3>
+            <div id="dynamicModalFields"></div>
+            <div class="modal-buttons">
+                <button id="modalSaveBtn" class="save-btn">حفظ</button>
+                <button id="modalCloseBtn" class="cancel-btn">إلغاء</button>
             </div>
         </div>
     </div>
-</div>
 
-<div id="toastMsg" class="toast-msg"></div>
-<div id="genericModal" class="modal"><div class="modal-content"><h3 id="modalTitle"></h3><div id="dynamicModalFields"></div><div class="modal-buttons"><button id="modalSaveBtn" class="save-btn">حفظ</button><button id="modalCloseBtn" class="cancel-btn">إلغاء</button></div></div></div>
+    <script>
+        let editingId = null, editingType = null;
+        let categoriesCache = [];
 
-<script>
-    let editingId = null, editingType = null;
-    function showToast(msg) { let t=document.getElementById("toastMsg"); t.innerText=msg; t.style.opacity="1"; setTimeout(()=>t.style.opacity="0",1800); }
-    
-    // المنتجات
-    async function loadProducts() { let res=await fetch('/api/products'); let products=await res.json(); renderProducts(products); }
-    function renderProducts(products) { let tbody=document.getElementById("productsTbody"); tbody.innerHTML=""; products.forEach((p,i)=>{ let row=tbody.insertRow(); row.insertCell(0).innerText=i+1; row.insertCell(1).innerText=p.name; row.insertCell(2).innerText=p.category; row.insertCell(3).innerText=p.price; let imgCell=row.insertCell(4); if(p.image_url){ let img=document.createElement("img"); img.src=p.image_url; img.style.width="40px"; img.style.height="40px"; img.style.objectFit="cover"; img.style.borderRadius="8px"; imgCell.appendChild(img); } else { imgCell.innerText="لا يوجد"; } let actions=row.insertCell(5); let edit=document.createElement("button"); edit.innerHTML='<i class="bi bi-pencil"></i>'; edit.className="action-btn edit-btn"; edit.onclick=()=>openProductModal(p); let del=document.createElement("button"); del.innerHTML='<i class="bi bi-trash3"></i>'; del.className="action-btn delete-btn"; del.onclick=()=>deleteProduct(p.id); actions.appendChild(edit); actions.appendChild(del); }); }
-    async function deleteProduct(id){ if(confirm("حذف المنتج؟")){ await fetch(`/api/products/${id}`,{method:'DELETE'}); loadProducts(); showToast("تم الحذف"); } }
-    function openProductModal(product=null){ editingId=product?.id||null; document.getElementById("modalTitle").innerText=product?"تعديل منتج":"إضافة منتج"; let container=document.getElementById("dynamicModalFields"); container.innerHTML=`
-        <input id="prodName" placeholder="اسم المنتج" value="${product?.name||''}">
-        <select id="prodCategory" id="prodCategorySelect">${loadCategoriesOptions(product?.category||'')}</select>
-        <input id="prodPrice" type="number" placeholder="السعر" value="${product?.price||''}">
-        <input id="prodIcon" placeholder="أيقونة (مثل bi bi-shirt)" value="${product?.icon||'bi bi-tag'}">
-        <input id="prodImageUrl" placeholder="رابط الصورة (اختياري)" value="${product?.image_url||''}">
-        <div class="image-preview" id="imagePreviewDiv" style="${product?.image_url ? '' : 'display:none;'}"><img id="imagePreview" src="${product?.image_url||''}" style="max-width:100px;"></div>
-        <small>يمكنك ترك رابط الصورة فارغاً لاستخدام الأيقونة بدلاً منها.</small>
-    `;
-    document.getElementById("prodImageUrl")?.addEventListener("input", function(){ let preview=document.getElementById("imagePreview"); if(preview){ preview.src=this.value; document.getElementById("imagePreviewDiv").style.display=this.value?"block":"none"; } });
-    document.getElementById("genericModal").classList.add("show"); editingType="product"; }
-    async function loadCategoriesOptions(selected){ let res=await fetch('/api/categories'); let cats=await res.json(); return cats.map(c=>`<option value="${c}" ${c===selected?'selected':''}>${c}</option>`).join(''); }
-    async function saveProductFromModal(){ let name=document.getElementById("prodName").value.trim(); let category=document.getElementById("prodCategory").value; let price=parseFloat(document.getElementById("prodPrice").value); let icon=document.getElementById("prodIcon").value.trim(); let image_url=document.getElementById("prodImageUrl").value.trim(); if(!name||isNaN(price)){ showToast("اسم وسعر صحيح مطلوب"); return; } let data={name,category,price,icon,image_url}; if(editingId){ await fetch(`/api/products/${editingId}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}); } else { await fetch('/api/products',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}); } loadProducts(); closeModal(); showToast("تم الحفظ"); }
-    // التصنيفات
-    async function loadCategories(){ let res=await fetch('/api/categories'); let cats=await res.json(); renderCategories(cats); }
-    function renderCategories(cats){ let tbody=document.getElementById("categoriesTbody"); tbody.innerHTML=""; cats.forEach((cat,i)=>{ let row=tbody.insertRow(); row.insertCell(0).innerText=i+1; row.insertCell(1).innerText=cat; let del=document.createElement("button"); del.innerHTML='<i class="bi bi-trash3"></i>'; del.className="action-btn delete-btn"; del.onclick=()=>deleteCategory(cat); row.insertCell(2).appendChild(del); }); }
-    async function deleteCategory(cat){ if(confirm(`حذف تصنيف ${cat}؟`)){ await fetch(`/api/categories/${encodeURIComponent(cat)}`,{method:'DELETE'}); loadCategories(); showToast("تم الحذف"); } }
-    function openCategoryModal(){ editingType="category"; document.getElementById("modalTitle").innerText="إضافة تصنيف جديد"; document.getElementById("dynamicModalFields").innerHTML=`<input id="newCat" placeholder="اسم التصنيف">`; document.getElementById("genericModal").classList.add("show"); }
-    async function saveCategoryFromModal(){ let newCat=document.getElementById("newCat").value.trim(); if(!newCat) return; await fetch('/api/categories',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:newCat})}); loadCategories(); closeModal(); showToast("تمت الإضافة"); }
-    // الطلبات
-    async function loadOrders(){ let res=await fetch('/api/orders'); let orders=await res.json(); renderOrders(orders); }
-    function renderOrders(orders){ let tbody=document.getElementById("ordersTbody"); tbody.innerHTML=""; orders.forEach((o,i)=>{ let row=tbody.insertRow(); row.insertCell(0).innerText=i+1; row.insertCell(1).innerText=o.customerName; row.insertCell(2).innerText=o.phone; row.insertCell(3).innerHTML=o.items.map(it=>`${it.name} (${it.qty})`).join('<br>'); row.insertCell(4).innerText=o.total; let statusCell=row.insertCell(5); let select=document.createElement("select"); select.className="status-select"; ["قيد التسليم","تم التسليم","ملغي","نفاذ الكمية"].forEach(s=>{ let opt=document.createElement("option"); opt.value=s; opt.innerText=s; if(o.status===s) opt.selected=true; select.appendChild(opt); }); select.onchange=async()=>{ await fetch(`/api/orders/${o.id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:select.value})}); loadOrders(); showToast("تم تحديث الحالة"); }; statusCell.appendChild(select); row.insertCell(6).innerText=new Date(o.createdAt).toLocaleDateString(); row.insertCell(7).innerHTML=""; }); }
-    // مناطق النقل
-    let regionSettings = { image: "https://img.sanishtech.com/u/130d1b77889fb2e2f250198b86ae6a96.png", text: "التوصيل متاح في صنعاء فقط" };
-    function loadRegionSettings(){ let stored = localStorage.getItem("hibe_region"); if(stored) regionSettings = JSON.parse(stored); updateRegionUI(); }
-    function updateRegionUI(){ document.getElementById("regionImagePreview").src = regionSettings.image; document.getElementById("regionTextPreview").innerText = regionSettings.text; }
-    function openRegionModal(){ editingType="region"; document.getElementById("modalTitle").innerText = "تعديل مناطق النقل"; document.getElementById("dynamicModalFields").innerHTML = `<input id="regionImage" placeholder="رابط الصورة" value="${regionSettings.image}"><textarea id="regionText" rows="2" placeholder="نص التوصيل">${regionSettings.text}</textarea>`; document.getElementById("genericModal").classList.add("show"); }
-    function saveRegionFromModal(){ let newImage = document.getElementById("regionImage").value.trim(); let newText = document.getElementById("regionText").value.trim(); if(newImage) regionSettings.image = newImage; if(newText) regionSettings.text = newText; localStorage.setItem("hibe_region", JSON.stringify(regionSettings)); updateRegionUI(); closeModal(); showToast("تم تحديث منطقة النقل"); }
-    // عام
-    function closeModal(){ document.getElementById("genericModal").classList.remove("show"); editingId=null; editingType=null; }
-    function setActiveTab(tab){ document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active")); document.getElementById(`${tab}Panel`).classList.add("active"); document.querySelectorAll(".tab-btn").forEach(btn=>btn.classList.toggle("active",btn.dataset.tab===tab)); if(tab==='products') loadProducts(); if(tab==='categories') loadCategories(); if(tab==='orders') loadOrders(); if(tab==='regions') loadRegionSettings(); }
-    function setupDarkMode(){ let isDark=localStorage.getItem("admin_dark")==="true"; if(isDark) document.body.classList.add("dark-mode"); document.getElementById("darkModeAdmin").addEventListener("click",()=>{ document.body.classList.toggle("dark-mode"); localStorage.setItem("admin_dark",document.body.classList.contains("dark-mode")); }); }
-    // أحداث
-    document.getElementById("addProductBtn").addEventListener("click",()=>openProductModal());
-    document.getElementById("addCategoryBtn").addEventListener("click",()=>openCategoryModal());
-    document.getElementById("editRegionBtn")?.addEventListener("click",openRegionModal);
-    document.getElementById("modalSaveBtn").addEventListener("click",()=>{ if(editingType==='product') saveProductFromModal(); else if(editingType==='category') saveCategoryFromModal(); else if(editingType==='region') saveRegionFromModal(); });
-    document.getElementById("modalCloseBtn").addEventListener("click",closeModal);
-    document.querySelectorAll(".tab-btn").forEach(btn=>btn.addEventListener("click",()=>setActiveTab(btn.dataset.tab)));
-    setupDarkMode(); setActiveTab("products");
-</script>
+        function showToast(msg) {
+            let t = document.getElementById("toastMsg");
+            t.innerText = msg;
+            t.style.opacity = "1";
+            setTimeout(() => t.style.opacity = "0", 1800);
+        }
+
+        // ------------------ المنتجات ------------------
+        async function loadProducts() {
+            let res = await fetch('/api/products');
+            let products = await res.json();
+            renderProducts(products);
+        }
+
+        function renderProducts(products) {
+            let tbody = document.getElementById("productsTbody");
+            tbody.innerHTML = "";
+            products.forEach((p, i) => {
+                let row = tbody.insertRow();
+                row.insertCell(0).innerText = i + 1;
+                row.insertCell(1).innerText = p.name;
+                row.insertCell(2).innerText = p.category;
+                row.insertCell(3).innerText = p.price;
+                let imgCell = row.insertCell(4);
+                if (p.image_url) {
+                    let img = document.createElement("img");
+                    img.src = p.image_url;
+                    img.style.width = "40px";
+                    img.style.height = "40px";
+                    img.style.objectFit = "cover";
+                    img.style.borderRadius = "8px";
+                    imgCell.appendChild(img);
+                } else {
+                    imgCell.innerText = "لا يوجد";
+                }
+                let actions = row.insertCell(5);
+                let editBtn = document.createElement("button");
+                editBtn.innerHTML = '<i class="bi bi-pencil"></i>';
+                editBtn.className = "action-btn edit-btn";
+                editBtn.onclick = () => openProductModal(p);
+                let delBtn = document.createElement("button");
+                delBtn.innerHTML = '<i class="bi bi-trash3"></i>';
+                delBtn.className = "action-btn delete-btn";
+                delBtn.onclick = () => deleteProduct(p.id);
+                actions.appendChild(editBtn);
+                actions.appendChild(delBtn);
+            });
+        }
+
+        async function deleteProduct(id) {
+            if (confirm("حذف المنتج؟")) {
+                await fetch(`/api/products/${id}`, { method: 'DELETE' });
+                loadProducts();
+                showToast("تم الحذف");
+            }
+        }
+
+        async function openProductModal(product = null) {
+            editingId = product?.id || null;
+            document.getElementById("modalTitle").innerText = product ? "تعديل منتج" : "إضافة منتج";
+            let container = document.getElementById("dynamicModalFields");
+            // جلب التصنيفات أولاً ثم إنشاء المحتوى
+            let cats = await fetch('/api/categories').then(res => res.json());
+            categoriesCache = cats;
+            let optionsHtml = cats.map(c => `<option value="${c}" ${c === product?.category ? 'selected' : ''}>${c}</option>`).join('');
+            container.innerHTML = `
+                <input id="prodName" placeholder="اسم المنتج" value="${product?.name || ''}">
+                <select id="prodCategory">${optionsHtml}</select>
+                <input id="prodPrice" type="number" placeholder="السعر" value="${product?.price || ''}">
+                <input id="prodIcon" placeholder="أيقونة (مثل bi bi-shirt)" value="${product?.icon || 'bi bi-tag'}">
+                <input id="prodImageUrl" placeholder="رابط الصورة (اختياري)" value="${product?.image_url || ''}">
+                <div class="image-preview" id="imagePreviewDiv" style="${product?.image_url ? '' : 'display:none;'}">
+                    <img id="imagePreview" src="${product?.image_url || ''}" style="max-width:100px;">
+                </div>
+                <small>يمكنك ترك رابط الصورة فارغاً لاستخدام الأيقونة بدلاً منها.</small>
+            `;
+            // معاينة الصورة
+            let imgUrlInput = document.getElementById("prodImageUrl");
+            if (imgUrlInput) {
+                imgUrlInput.addEventListener("input", function() {
+                    let preview = document.getElementById("imagePreview");
+                    if (preview) {
+                        preview.src = this.value;
+                        document.getElementById("imagePreviewDiv").style.display = this.value ? "block" : "none";
+                    }
+                });
+            }
+            document.getElementById("genericModal").classList.add("show");
+            editingType = "product";
+        }
+
+        async function saveProductFromModal() {
+            let name = document.getElementById("prodName").value.trim();
+            let category = document.getElementById("prodCategory").value;
+            let price = parseFloat(document.getElementById("prodPrice").value);
+            let icon = document.getElementById("prodIcon").value.trim();
+            let image_url = document.getElementById("prodImageUrl").value.trim();
+            if (!name || isNaN(price)) {
+                showToast("اسم وسعر صحيح مطلوب");
+                return;
+            }
+            let data = { name, category, price, icon, image_url };
+            if (editingId) {
+                await fetch(`/api/products/${editingId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+            } else {
+                await fetch('/api/products', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+            }
+            loadProducts();
+            closeModal();
+            showToast("تم الحفظ");
+        }
+
+        // ------------------ التصنيفات ------------------
+        async function loadCategories() {
+            let res = await fetch('/api/categories');
+            let cats = await res.json();
+            renderCategories(cats);
+        }
+
+        function renderCategories(cats) {
+            let tbody = document.getElementById("categoriesTbody");
+            tbody.innerHTML = "";
+            cats.forEach((cat, i) => {
+                let row = tbody.insertRow();
+                row.insertCell(0).innerText = i + 1;
+                row.insertCell(1).innerText = cat;
+                let delBtn = document.createElement("button");
+                delBtn.innerHTML = '<i class="bi bi-trash3"></i>';
+                delBtn.className = "action-btn delete-btn";
+                delBtn.onclick = () => deleteCategory(cat);
+                row.insertCell(2).appendChild(delBtn);
+            });
+        }
+
+        async function deleteCategory(cat) {
+            if (confirm(`حذف تصنيف ${cat}؟`)) {
+                await fetch(`/api/categories/${encodeURIComponent(cat)}`, { method: 'DELETE' });
+                loadCategories();
+                showToast("تم الحذف");
+            }
+        }
+
+        function openCategoryModal() {
+            editingType = "category";
+            document.getElementById("modalTitle").innerText = "إضافة تصنيف جديد";
+            document.getElementById("dynamicModalFields").innerHTML = `<input id="newCat" placeholder="اسم التصنيف">`;
+            document.getElementById("genericModal").classList.add("show");
+        }
+
+        async function saveCategoryFromModal() {
+            let newCat = document.getElementById("newCat").value.trim();
+            if (!newCat) return;
+            await fetch('/api/categories', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: newCat })
+            });
+            loadCategories();
+            closeModal();
+            showToast("تمت الإضافة");
+        }
+
+        // ------------------ الطلبات ------------------
+        async function loadOrders() {
+            let res = await fetch('/api/orders');
+            let orders = await res.json();
+            renderOrders(orders);
+        }
+
+        function renderOrders(orders) {
+            let tbody = document.getElementById("ordersTbody");
+            tbody.innerHTML = "";
+            orders.forEach((o, i) => {
+                let row = tbody.insertRow();
+                row.insertCell(0).innerText = i + 1;
+                row.insertCell(1).innerText = o.customerName;
+                row.insertCell(2).innerText = o.phone;
+                row.insertCell(3).innerHTML = o.items.map(it => `${it.name} (${it.qty})`).join('<br>');
+                row.insertCell(4).innerText = o.total;
+                let statusCell = row.insertCell(5);
+                let select = document.createElement("select");
+                select.className = "status-select";
+                ["قيد التسليم", "تم التسليم", "ملغي", "نفاذ الكمية"].forEach(s => {
+                    let opt = document.createElement("option");
+                    opt.value = s;
+                    opt.innerText = s;
+                    if (o.status === s) opt.selected = true;
+                    select.appendChild(opt);
+                });
+                select.onchange = async () => {
+                    await fetch(`/api/orders/${o.id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ status: select.value })
+                    });
+                    loadOrders();
+                    showToast("تم تحديث الحالة");
+                };
+                statusCell.appendChild(select);
+                row.insertCell(6).innerText = new Date(o.createdAt).toLocaleDateString();
+                row.insertCell(7).innerHTML = "";
+            });
+        }
+
+        // ------------------ مناطق النقل ------------------
+        let regionSettings = { image: "https://img.sanishtech.com/u/130d1b77889fb2e2f250198b86ae6a96.png", text: "التوصيل متاح في صنعاء فقط" };
+        function loadRegionSettings() {
+            let stored = localStorage.getItem("hibe_region");
+            if (stored) regionSettings = JSON.parse(stored);
+            updateRegionUI();
+        }
+        function updateRegionUI() {
+            document.getElementById("regionImagePreview").src = regionSettings.image;
+            document.getElementById("regionTextPreview").innerText = regionSettings.text;
+        }
+        function openRegionModal() {
+            editingType = "region";
+            document.getElementById("modalTitle").innerText = "تعديل مناطق النقل";
+            document.getElementById("dynamicModalFields").innerHTML = `
+                <input id="regionImage" placeholder="رابط الصورة" value="${regionSettings.image}">
+                <textarea id="regionText" rows="2" placeholder="نص التوصيل">${regionSettings.text}</textarea>
+            `;
+            document.getElementById("genericModal").classList.add("show");
+        }
+        function saveRegionFromModal() {
+            let newImage = document.getElementById("regionImage").value.trim();
+            let newText = document.getElementById("regionText").value.trim();
+            if (newImage) regionSettings.image = newImage;
+            if (newText) regionSettings.text = newText;
+            localStorage.setItem("hibe_region", JSON.stringify(regionSettings));
+            updateRegionUI();
+            closeModal();
+            showToast("تم تحديث منطقة النقل");
+        }
+
+        // ------------------ عام ------------------
+        function closeModal() {
+            document.getElementById("genericModal").classList.remove("show");
+            editingId = null;
+            editingType = null;
+        }
+
+        function setActiveTab(tab) {
+            document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+            document.getElementById(`${tab}Panel`).classList.add("active");
+            document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.toggle("active", btn.dataset.tab === tab));
+            if (tab === 'products') loadProducts();
+            if (tab === 'categories') loadCategories();
+            if (tab === 'orders') loadOrders();
+            if (tab === 'regions') loadRegionSettings();
+        }
+
+        function setupDarkMode() {
+            let isDark = localStorage.getItem("admin_dark") === "true";
+            if (isDark) document.body.classList.add("dark-mode");
+            document.getElementById("darkModeAdmin").addEventListener("click", () => {
+                document.body.classList.toggle("dark-mode");
+                localStorage.setItem("admin_dark", document.body.classList.contains("dark-mode"));
+            });
+        }
+
+        // ربط الأحداث
+        document.getElementById("addProductBtn").addEventListener("click", () => openProductModal());
+        document.getElementById("addCategoryBtn").addEventListener("click", () => openCategoryModal());
+        document.getElementById("editRegionBtn")?.addEventListener("click", openRegionModal);
+        document.getElementById("modalSaveBtn").addEventListener("click", () => {
+            if (editingType === 'product') saveProductFromModal();
+            else if (editingType === 'category') saveCategoryFromModal();
+            else if (editingType === 'region') saveRegionFromModal();
+        });
+        document.getElementById("modalCloseBtn").addEventListener("click", closeModal);
+        document.querySelectorAll(".tab-btn").forEach(btn => btn.addEventListener("click", () => setActiveTab(btn.dataset.tab)));
+
+        setupDarkMode();
+        setActiveTab("products");
+    </script>
 </body>
 </html>
