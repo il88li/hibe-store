@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
+        /* نفس الأنماط السابقة - لم تتغير */
         * {
             margin: 0;
             padding: 0;
@@ -445,62 +446,14 @@
 </div>
 
 <script>
-    // تحميل المنتجات من localStorage أو استخدام القيم الافتراضية (جميع التصنيفات)
-    let products = [];
+    // ======================== المتغيرات العامة ========================
+    let products = [];           // سيتم جلبها من API
     let cart = [];
     let currentFilter = "all";
     let currentTab = "home";
     let pendingOrderData = null;
 
-    const defaultProducts = [
-        { id: 1, name: "قميص رجالي كلاسيك", category: "رجالي", price: 99, icon: "bi bi-shirt" },
-        { id: 2, name: "فستان كتان أنيق", category: "نسائي", price: 149, icon: "bi bi-gender-female" },
-        { id: 3, name: "طقم ولادي رياضي", category: "ولادي", price: 79, icon: "bi bi-emoji-smile" },
-        { id: 4, name: "تنورة بناتي مكشكشة", category: "بناتي", price: 89, icon: "bi bi-suit-heart" },
-        { id: 5, name: "حذاء رياضي جلد", category: "جزم", price: 199, icon: "bi bi-shoes" },
-        { id: 6, name: "حقيبة ظهر جلدية", category: "شنط", price: 129, icon: "bi bi-bag" },
-        { id: 7, name: "جاكيت جينز ثقيل", category: "جواكت", price: 189, icon: "bi bi-vest" },
-        { id: 8, name: "تيشيرت صيفي قطني", category: "ملابس صيفية", price: 59, icon: "bi bi-sun" },
-        { id: 9, name: "بنطلون كارجو عسكري", category: "رجالي", price: 119, icon: "bi bi-bag-plus" },
-        { id: 10, name: "بلوزة شيفون شفاف", category: "نسائي", price: 109, icon: "bi bi-flower1" },
-        { id: 11, name: "حذاء ولادي خفيف", category: "جزم", price: 99, icon: "bi bi-emoji-smile" },
-        { id: 12, name: "شنطة كتف سهرة", category: "شنط", price: 159, icon: "bi bi-gem" },
-        { id: 13, name: "جاكيت بومبر واقي", category: "جواكت", price: 229, icon: "bi bi-thermometer-snow" },
-        { id: 14, name: "فستان صيفي طويل", category: "ملابس صيفية", price: 139, icon: "bi bi-brightness-alt-high" },
-        { id: 15, name: "بدلة بناتي كتان", category: "بناتي", price: 129, icon: "bi bi-asterisk" },
-        { id: 16, name: "طقم ولادي شتوي", category: "ولادي", price: 99, icon: "bi bi-snow2" }
-    ];
-
-    function loadProducts() {
-        const stored = localStorage.getItem("hibe_products");
-        if (stored) {
-            products = JSON.parse(stored);
-        } else {
-            products = [...defaultProducts];
-            localStorage.setItem("hibe_products", JSON.stringify(products));
-        }
-        // بناء شريط التصنيفات ديناميكياً من المنتجات الفعلية
-        const categories = ["all", ...new Set(products.map(p => p.category))];
-        const filterRow = document.getElementById("filterRow");
-        filterRow.innerHTML = categories.map(cat => `<div class="chip-cat ${cat === 'all' ? 'active' : ''}" data-cat="${cat}">${cat === 'all' ? 'الكل' : cat}</div>`).join('');
-        // إعادة ربط الأحداث
-        document.querySelectorAll(".chip-cat").forEach(chip => {
-            chip.addEventListener("click", () => {
-                currentFilter = chip.dataset.cat;
-                document.querySelectorAll(".chip-cat").forEach(c => c.classList.remove("active"));
-                chip.classList.add("active");
-                if (currentTab === 'home') renderHome();
-                else setActiveTab('home');
-            });
-        });
-        renderHome();
-    }
-
-    function saveProducts() {
-        localStorage.setItem("hibe_products", JSON.stringify(products));
-        loadProducts(); // إعادة تحميل لتحديث الشاشة
-    }
-
+    // ======================== دوال مساعدة ========================
     function showToast(msg) {
         const t = document.getElementById("toastMsg");
         t.innerText = msg;
@@ -508,6 +461,34 @@
         setTimeout(() => t.style.opacity = "0", 1800);
     }
 
+    // جلب المنتجات من الخادم
+    async function fetchProducts() {
+        try {
+            const response = await fetch('/api/products');
+            if (!response.ok) throw new Error('فشل في جلب المنتجات');
+            products = await response.json();
+            // بناء شريط التصنيفات ديناميكياً من المنتجات الفعلية
+            const categories = ["all", ...new Set(products.map(p => p.category))];
+            const filterRow = document.getElementById("filterRow");
+            filterRow.innerHTML = categories.map(cat => `<div class="chip-cat ${cat === 'all' ? 'active' : ''}" data-cat="${cat}">${cat === 'all' ? 'الكل' : cat}</div>`).join('');
+            // إعادة ربط أحداث التصنيفات
+            document.querySelectorAll(".chip-cat").forEach(chip => {
+                chip.addEventListener("click", () => {
+                    currentFilter = chip.dataset.cat;
+                    document.querySelectorAll(".chip-cat").forEach(c => c.classList.remove("active"));
+                    chip.classList.add("active");
+                    if (currentTab === 'home') renderHome();
+                    else setActiveTab('home');
+                });
+            });
+            renderHome();
+        } catch (error) {
+            console.error(error);
+            showToast("حدث خطأ في تحميل المنتجات");
+        }
+    }
+
+    // ======================== إدارة السلة (محلياً) ========================
     function saveCart() {
         localStorage.setItem("hibe_cart", JSON.stringify(cart));
         updateBadge();
@@ -563,6 +544,7 @@
         showToast("تم تفريغ السلة");
     }
 
+    // ======================== طلب عبر واتساب ========================
     function openOrderModal(orderData) {
         pendingOrderData = orderData;
         document.getElementById("orderModal").classList.add("show");
@@ -600,6 +582,7 @@
         pendingOrderData = null;
     }
 
+    // ======================== عرض المنتجات الرئيسية ========================
     function renderHome() {
         const grid = document.getElementById("homeGrid");
         let filtered = currentFilter === "all" ? products : products.filter(p => p.category === currentFilter);
@@ -648,6 +631,7 @@
         });
     }
 
+    // ======================== عرض السلة ========================
     function renderCart() {
         const container = document.getElementById("cartList");
         const totalDiv = document.getElementById("cartTotal");
@@ -711,6 +695,7 @@
         }
     }
 
+    // ======================== التبويبات ========================
     function setActiveTab(tab) {
         currentTab = tab;
         const homeDiv = document.getElementById("homeGrid");
@@ -730,6 +715,7 @@
         });
     }
 
+    // ======================== الوضع الليلي ========================
     function setupDarkMode() {
         const darkBtn = document.getElementById("darkModeBtn");
         const isDark = localStorage.getItem("hibe_dark") === "true";
@@ -743,9 +729,10 @@
         darkBtn.innerHTML = isDark ? '<i class="bi bi-brightness-high-fill"></i>' : '<i class="bi bi-moon-stars"></i>';
     }
 
-    function init() {
-        loadProducts();
-        loadCart();
+    // ======================== بدء التشغيل ========================
+    async function init() {
+        await fetchProducts();   // تحميل المنتجات من الخادم أولاً
+        loadCart();              // تحميل السلة من localStorage
         setupDarkMode();
         document.querySelectorAll(".nav-icon-btn").forEach(btn => {
             btn.addEventListener("click", () => setActiveTab(btn.dataset.tab));
