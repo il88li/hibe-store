@@ -1,92 +1,235 @@
-# app.py - خادم Flask لمتجر HIBE STORE (بدون منتجات افتراضية، مع دعم الصور)
+# app.py - خادم Flask مع PostgreSQL لتخزين المنتجات والتصنيفات والطلبات
 import json
 import os
+from datetime import datetime
 from flask import Flask, render_template_string, request, jsonify
 from flask_cors import CORS
-from datetime import datetime
+import psycopg2
+from psycopg2.extras import RealDictCursor
+from psycopg2 import sql
 
 app = Flask(__name__, static_folder='.', static_url_path='')
 CORS(app)
 
-# ------------------ المنتجات ------------------
-PRODUCTS_FILE = 'products.json'
+# ------------------ اتصال قاعدة البيانات ------------------
+DATABASE_URL = "postgresql://hibe_store_user:mMocyX638yt9YuRvHKml3bvh6YEjp07O@dpg-d8o43g8g4nts73cajcbg-a.oregon-postgres.render.com/hibe_store"
 
-def load_products():
-    if not os.path.exists(PRODUCTS_FILE):
-        save_products([])  # بداية بدون منتجات
-        return []
-    with open(PRODUCTS_FILE, 'r', encoding='utf-8') as f:
-        return json.load(f)
+def get_db_connection():
+    return psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
 
-def save_products(products):
-    with open(PRODUCTS_FILE, 'w', encoding='utf-8') as f:
-        json.dump(products, f, ensure_ascii=False, indent=2)
+def init_db():
+    """إنشاء الجداول إذا لم تكن موجودة"""
+    conn = get_db_connection()
+    cur = conn.cursor()
+    # جدول المنتجات
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS products (
+            id SERIAL PRIMARY KEY,
+            name TEXT NOT NULL,
+            category TEXT NOT NULL,
+            price NUMERIC(10,2) NOT NULL,
+            icon TEXT NOT NULL,
+            image_url TEXT
+        )
+    """)
+    # جدول التصنيفات (حفظ كقائمة بسيطة من النصوص)
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS categories (
+            name TEXT PRIMARY KEY
+        )
+    """)
+    # جدول الطلبات
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS orders (
+            id SERIAL PRIMARY KEY,
+            customer_name TEXT NOT NULL,
+            address TEXT,
+            phone TEXT,
+            notes TEXT,
+            items JSONB NOT NULL,
+            total NUMERIC(10,2),
+            status TEXT DEFAULT 'قيد التسليم',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    # إدخال التصنيفات الافتراضية إذا كان الجدول فارغاً
+    cur.execute("SELECT COUNT(*) FROM categories")
+    count = cur.fetchone()['count']
+    if count == 0:
+        default_cats = ["رجالي", "نسائي", "ولادي", "بناتي", "جزم", "شنط", "جواكت", "ملابس صيفية"]
+        for cat in default_cats:
+            cur.execute("INSERT INTO categories (name) VALUES (%s) ON CONFLICT DO NOTHING", (cat,))
+    conn.commit()
+    cur.close()
+    conn.close()
 
+# استدعاء دالة التهيئة عند بدء التشغيل
+init_db()
+
+# ------------------ دوال مساعدة للتعامل مع قاعدة البيانات ------------------
+def get_all_products():
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM products ORDER BY id")
+    products = cur.fetchall()
+    cur.close()
+    conn.close()
+    return products
+
+def get_product_by_id(product_id):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM products WHERE id = %s", (product_id,))
+    product = cur.fetchone()
+    cur.close()
+    conn.close()
+    return product
+
+def add_product_to_db(name, category, price, icon, image_url):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute(
+        "INSERT INTO products (name, category, price, icon, image_url) VALUES (%s, %s, %s, %s, %s) RETURNING *",
+        (name, category, price, icon, image_url)
+    )
+    new_product = cur.fetchone()
+    conn.commit()
+    cur.close()
+    conn.close()
+    return new_product
+
+def update_product_in_db(product_id, name, category, price, icon, image_url):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute(
+        "UPDATE products SET name=%s, category=%s, price=%s, icon=%s, image_url=%s WHERE id=%s RETURNING *",
+        (name, category, price, icon, image_url, product_id)
+    )
+    updated = cur.fetchone()
+    conn.commit()
+    cur.close()
+    conn.close()
+    return updated
+
+def delete_product_from_db(product_id):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM products WHERE id = %s", (product_id,))
+    conn.commit()
+    cur.close()
+    conn.close()
+
+# ------------------ التصنيفات ------------------
+def get_all_categories():
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT name FROM categories ORDER BY name")
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
+    return [row['name'] for row in rows]
+
+def add_category_to_db(name):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("INSERT INTO categories (name) VALUES (%s) ON CONFLICT DO NOTHING", (name,))
+    conn.commit()
+    cur.close()
+    conn.close()
+
+def delete_category_from_db(name):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM categories WHERE name = %s", (name,))
+    conn.commit()
+    cur.close()
+    conn.close()
+
+# ------------------ الطلبات ------------------
+def get_all_orders():
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM orders ORDER BY id DESC")
+    orders = cur.fetchall()
+    cur.close()
+    conn.close()
+    return orders
+
+def add_order_to_db(customer_name, address, phone, notes, items, total):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute(
+        "INSERT INTO orders (customer_name, address, phone, notes, items, total, status, created_at) VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING *",
+        (customer_name, address, phone, notes, json.dumps(items), total, 'قيد التسليم', datetime.now())
+    )
+    new_order = cur.fetchone()
+    conn.commit()
+    cur.close()
+    conn.close()
+    return new_order
+
+def update_order_status(order_id, status):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("UPDATE orders SET status = %s WHERE id = %s RETURNING *", (status, order_id))
+    updated = cur.fetchone()
+    conn.commit()
+    cur.close()
+    conn.close()
+    return updated
+
+# ------------------ واجهات API ------------------
 @app.route('/api/products', methods=['GET'])
 def get_products():
-    return jsonify(load_products())
+    products = get_all_products()
+    return jsonify(products)
 
 @app.route('/api/products', methods=['POST'])
 def add_product():
     data = request.get_json()
     if not data or 'name' not in data or 'category' not in data or 'price' not in data:
         return jsonify({'error': 'بيانات غير مكتملة'}), 400
-    products = load_products()
-    new_id = max([p['id'] for p in products], default=0) + 1
-    new_product = {
-        'id': new_id,
-        'name': data['name'],
-        'category': data['category'],
-        'price': float(data['price']),
-        'icon': data.get('icon', 'bi bi-tag'),
-        'image_url': data.get('image_url', '')  # دعم رابط الصورة
-    }
-    products.append(new_product)
-    save_products(products)
-    return jsonify(new_product), 201
+    name = data['name']
+    category = data['category']
+    price = float(data['price'])
+    icon = data.get('icon', 'bi bi-tag')
+    image_url = data.get('image_url', '')
+    try:
+        new_product = add_product_to_db(name, category, price, icon, image_url)
+        return jsonify(new_product), 201
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/products/<int:product_id>', methods=['PUT'])
 def update_product(product_id):
     data = request.get_json()
-    products = load_products()
-    for p in products:
-        if p['id'] == product_id:
-            p['name'] = data.get('name', p['name'])
-            p['category'] = data.get('category', p['category'])
-            p['price'] = float(data.get('price', p['price']))
-            p['icon'] = data.get('icon', p['icon'])
-            p['image_url'] = data.get('image_url', p.get('image_url', ''))
-            save_products(products)
-            return jsonify(p)
-    return jsonify({'error': 'المنتج غير موجود'}), 404
+    name = data.get('name')
+    category = data.get('category')
+    price = float(data.get('price'))
+    icon = data.get('icon', 'bi bi-tag')
+    image_url = data.get('image_url', '')
+    try:
+        updated = update_product_in_db(product_id, name, category, price, icon, image_url)
+        if updated:
+            return jsonify(updated)
+        else:
+            return jsonify({'error': 'المنتج غير موجود'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/products/<int:product_id>', methods=['DELETE'])
 def delete_product(product_id):
-    products = load_products()
-    new_products = [p for p in products if p['id'] != product_id]
-    if len(new_products) == len(products):
-        return jsonify({'error': 'المنتج غير موجود'}), 404
-    save_products(new_products)
-    return jsonify({'message': 'تم حذف المنتج'}), 200
+    try:
+        delete_product_from_db(product_id)
+        return jsonify({'message': 'تم حذف المنتج'}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
-# ------------------ إدارة التصنيفات ------------------
-CATEGORIES_FILE = 'categories.json'
-
-def load_categories():
-    if not os.path.exists(CATEGORIES_FILE):
-        default_cats = ["رجالي", "نسائي", "ولادي", "بناتي", "جزم", "شنط", "جواكت", "ملابس صيفية"]
-        save_categories(default_cats)
-        return default_cats
-    with open(CATEGORIES_FILE, 'r', encoding='utf-8') as f:
-        return json.load(f)
-
-def save_categories(categories):
-    with open(CATEGORIES_FILE, 'w', encoding='utf-8') as f:
-        json.dump(categories, f, ensure_ascii=False, indent=2)
-
+# ------------------ التصنيفات ------------------
 @app.route('/api/categories', methods=['GET'])
 def get_categories():
-    return jsonify(load_categories())
+    cats = get_all_categories()
+    return jsonify(cats)
 
 @app.route('/api/categories', methods=['POST'])
 def add_category():
@@ -94,70 +237,53 @@ def add_category():
     new_cat = data.get('name')
     if not new_cat:
         return jsonify({'error': 'اسم التصنيف مطلوب'}), 400
-    cats = load_categories()
-    if new_cat in cats:
-        return jsonify({'error': 'التصنيف موجود بالفعل'}), 400
-    cats.append(new_cat)
-    save_categories(cats)
-    return jsonify({'message': 'تمت الإضافة', 'categories': cats}), 201
+    try:
+        add_category_to_db(new_cat)
+        return jsonify({'message': 'تمت الإضافة', 'categories': get_all_categories()}), 201
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/categories/<string:cat_name>', methods=['DELETE'])
 def delete_category(cat_name):
-    cats = load_categories()
-    if cat_name not in cats:
-        return jsonify({'error': 'التصنيف غير موجود'}), 404
-    cats.remove(cat_name)
-    save_categories(cats)
-    return jsonify({'message': 'تم الحذف', 'categories': cats})
+    try:
+        delete_category_from_db(cat_name)
+        return jsonify({'message': 'تم الحذف', 'categories': get_all_categories()}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
-# ------------------ إدارة الطلبات ------------------
-ORDERS_FILE = 'orders.json'
-
-def load_orders():
-    if not os.path.exists(ORDERS_FILE):
-        return []
-    with open(ORDERS_FILE, 'r', encoding='utf-8') as f:
-        return json.load(f)
-
-def save_orders(orders):
-    with open(ORDERS_FILE, 'w', encoding='utf-8') as f:
-        json.dump(orders, f, ensure_ascii=False, indent=2)
-
+# ------------------ الطلبات ------------------
 @app.route('/api/orders', methods=['GET'])
 def get_orders():
-    return jsonify(load_orders())
+    orders = get_all_orders()
+    return jsonify(orders)
 
 @app.route('/api/orders', methods=['POST'])
 def create_order():
     data = request.get_json()
-    orders = load_orders()
-    new_id = max([o['id'] for o in orders], default=0) + 1
-    new_order = {
-        'id': new_id,
-        'customerName': data.get('customerName'),
-        'address': data.get('address'),
-        'phone': data.get('phone'),
-        'notes': data.get('notes', ''),
-        'items': data.get('items', []),
-        'total': data.get('total', 0),
-        'status': 'قيد التسليم',
-        'createdAt': datetime.now().isoformat()
-    }
-    orders.append(new_order)
-    save_orders(orders)
-    return jsonify(new_order), 201
+    customer_name = data.get('customerName')
+    address = data.get('address')
+    phone = data.get('phone')
+    notes = data.get('notes', '')
+    items = data.get('items', [])
+    total = data.get('total', 0)
+    try:
+        new_order = add_order_to_db(customer_name, address, phone, notes, items, total)
+        return jsonify(new_order), 201
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/orders/<int:order_id>', methods=['PUT'])
 def update_order_status(order_id):
     data = request.get_json()
     new_status = data.get('status')
-    orders = load_orders()
-    for order in orders:
-        if order['id'] == order_id:
-            order['status'] = new_status
-            save_orders(orders)
-            return jsonify(order)
-    return jsonify({'error': 'الطلب غير موجود'}), 404
+    try:
+        updated = update_order_status(order_id, new_status)
+        if updated:
+            return jsonify(updated)
+        else:
+            return jsonify({'error': 'الطلب غير موجود'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 # ------------------ صفحات HTML ------------------
 def read_html_file(filename):
@@ -180,7 +306,7 @@ def admin_page():
     return render_template_string(read_html_file('man.html'))
 
 if __name__ == '__main__':
-    print("✅ خادم HIBE STORE يعمل على http://127.0.0.1:5000")
+    print("✅ خادم HIBE STORE (مع PostgreSQL) يعمل على http://127.0.0.1:5000")
     print("📦 واجهة المتجر: http://127.0.0.1:5000/home.html")
     print("🛠️ لوحة الإدارة: http://127.0.0.1:5000/man.html")
     app.run(debug=True, host='0.0.0.0', port=5000)
