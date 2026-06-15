@@ -1,4 +1,4 @@
-# app.py - خادم Flask لمتجر HIBE STORE مع إدارة الطلبات والدردشة والتصنيفات
+# app.py - خادم Flask لمتجر HIBE STORE (بدون بيانات افتراضية)
 import json
 import os
 from flask import Flask, render_template_string, request, jsonify
@@ -8,31 +8,14 @@ from datetime import datetime
 app = Flask(__name__, static_folder='.', static_url_path='')
 CORS(app)
 
-# ------------------ المنتجات ------------------
+# ------------------ المنتجات (تبدأ فارغة) ------------------
 PRODUCTS_FILE = 'products.json'
 
 def load_products():
     if not os.path.exists(PRODUCTS_FILE):
-        default_products = [
-            {"id": 1, "name": "قميص رجالي كلاسيك", "category": "رجالي", "price": 99, "icon": "bi bi-shirt"},
-            {"id": 2, "name": "فستان كتان أنيق", "category": "نسائي", "price": 149, "icon": "bi bi-gender-female"},
-            {"id": 3, "name": "طقم ولادي رياضي", "category": "ولادي", "price": 79, "icon": "bi bi-emoji-smile"},
-            {"id": 4, "name": "تنورة بناتي مكشكشة", "category": "بناتي", "price": 89, "icon": "bi bi-suit-heart"},
-            {"id": 5, "name": "حذاء رياضي جلد", "category": "جزم", "price": 199, "icon": "bi bi-shoes"},
-            {"id": 6, "name": "حقيبة ظهر جلدية", "category": "شنط", "price": 129, "icon": "bi bi-bag"},
-            {"id": 7, "name": "جاكيت جينز ثقيل", "category": "جواكت", "price": 189, "icon": "bi bi-vest"},
-            {"id": 8, "name": "تيشيرت صيفي قطني", "category": "ملابس صيفية", "price": 59, "icon": "bi bi-sun"},
-            {"id": 9, "name": "بنطلون كارجو عسكري", "category": "رجالي", "price": 119, "icon": "bi bi-bag-plus"},
-            {"id": 10, "name": "بلوزة شيفون شفاف", "category": "نسائي", "price": 109, "icon": "bi bi-flower1"},
-            {"id": 11, "name": "حذاء ولادي خفيف", "category": "جزم", "price": 99, "icon": "bi bi-emoji-smile"},
-            {"id": 12, "name": "شنطة كتف سهرة", "category": "شنط", "price": 159, "icon": "bi bi-gem"},
-            {"id": 13, "name": "جاكيت بومبر واقي", "category": "جواكت", "price": 229, "icon": "bi bi-thermometer-snow"},
-            {"id": 14, "name": "فستان صيفي طويل", "category": "ملابس صيفية", "price": 139, "icon": "bi bi-brightness-alt-high"},
-            {"id": 15, "name": "بدلة بناتي كتان", "category": "بناتي", "price": 129, "icon": "bi bi-asterisk"},
-            {"id": 16, "name": "طقم ولادي شتوي", "category": "ولادي", "price": 99, "icon": "bi bi-snow2"}
-        ]
-        save_products(default_products)
-        return default_products
+        # لا توجد منتجات افتراضية – ابدأ بقائمة فارغة
+        save_products([])
+        return []
     with open(PRODUCTS_FILE, 'r', encoding='utf-8') as f:
         return json.load(f)
 
@@ -85,7 +68,7 @@ def delete_product(product_id):
     save_products(new_products)
     return jsonify({'message': 'تم حذف المنتج'}), 200
 
-# ------------------ إدارة التصنيفات ------------------
+# ------------------ إدارة التصنيفات (تبقى افتراضية لكن يمكن تعديلها) ------------------
 CATEGORIES_FILE = 'categories.json'
 
 def load_categories():
@@ -174,36 +157,6 @@ def update_order_status(order_id):
             save_orders(orders)
             return jsonify(order)
     return jsonify({'error': 'الطلب غير موجود'}), 404
-
-# ------------------ إدارة الرسائل (الدردشة) ------------------
-MESSAGES_FILE = 'messages.json'
-
-def load_messages():
-    if not os.path.exists(MESSAGES_FILE):
-        return []
-    with open(MESSAGES_FILE, 'r', encoding='utf-8') as f:
-        return json.load(f)
-
-def save_messages(messages):
-    with open(MESSAGES_FILE, 'w', encoding='utf-8') as f:
-        json.dump(messages, f, ensure_ascii=False, indent=2)
-
-@app.route('/api/messages', methods=['GET'])
-def get_messages():
-    return jsonify(load_messages())
-
-@app.route('/api/messages', methods=['POST'])
-def send_message():
-    data = request.get_json()
-    messages = load_messages()
-    messages.append(data)
-    save_messages(messages)
-    return jsonify({'message': 'تم الإرسال'}), 201
-
-@app.route('/api/messages/clear', methods=['DELETE'])
-def clear_messages():
-    save_messages([])
-    return jsonify({'message': 'تم مسح المحادثة'}), 200
 
 # ------------------ صفحات HTML ------------------
 def read_html_file(filename):
