@@ -1,4 +1,4 @@
-# app.py - خادم Flask لمتجر HIBE STORE (بدون بيانات افتراضية)
+# app.py - خادم Flask لمتجر HIBE STORE (بدون منتجات افتراضية، مع دعم الصور)
 import json
 import os
 from flask import Flask, render_template_string, request, jsonify
@@ -8,13 +8,12 @@ from datetime import datetime
 app = Flask(__name__, static_folder='.', static_url_path='')
 CORS(app)
 
-# ------------------ المنتجات (تبدأ فارغة) ------------------
+# ------------------ المنتجات ------------------
 PRODUCTS_FILE = 'products.json'
 
 def load_products():
     if not os.path.exists(PRODUCTS_FILE):
-        # لا توجد منتجات افتراضية – ابدأ بقائمة فارغة
-        save_products([])
+        save_products([])  # بداية بدون منتجات
         return []
     with open(PRODUCTS_FILE, 'r', encoding='utf-8') as f:
         return json.load(f)
@@ -39,7 +38,8 @@ def add_product():
         'name': data['name'],
         'category': data['category'],
         'price': float(data['price']),
-        'icon': data.get('icon', 'bi bi-tag')
+        'icon': data.get('icon', 'bi bi-tag'),
+        'image_url': data.get('image_url', '')  # دعم رابط الصورة
     }
     products.append(new_product)
     save_products(products)
@@ -55,6 +55,7 @@ def update_product(product_id):
             p['category'] = data.get('category', p['category'])
             p['price'] = float(data.get('price', p['price']))
             p['icon'] = data.get('icon', p['icon'])
+            p['image_url'] = data.get('image_url', p.get('image_url', ''))
             save_products(products)
             return jsonify(p)
     return jsonify({'error': 'المنتج غير موجود'}), 404
@@ -68,7 +69,7 @@ def delete_product(product_id):
     save_products(new_products)
     return jsonify({'message': 'تم حذف المنتج'}), 200
 
-# ------------------ إدارة التصنيفات (تبقى افتراضية لكن يمكن تعديلها) ------------------
+# ------------------ إدارة التصنيفات ------------------
 CATEGORIES_FILE = 'categories.json'
 
 def load_categories():
@@ -164,7 +165,7 @@ def read_html_file(filename):
         with open(filename, 'r', encoding='utf-8') as f:
             return f.read()
     except FileNotFoundError:
-        return f"<h1>الملف {filename} غير موجود</h1>"
+        return f"<h1>الملف {filename} غير موجود. تأكد من وجوده في نفس المجلد.</h1>"
 
 @app.route('/')
 def home():
