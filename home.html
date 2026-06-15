@@ -237,51 +237,44 @@
             padding: 10px 20px;
             border-radius: 50px;
         }
-        /* تبويب سفلي */
-        .floating-bottom-nav {
+        /* تبويب سفلي واحد (الرئيسية فقط) */
+        .single-bottom-nav {
             position: fixed;
-            bottom: 12px;
+            bottom: 16px;
             left: 50%;
             transform: translateX(-50%);
-            width: calc(100% - 30px);
-            max-width: 500px;
+            width: calc(100% - 40px);
+            max-width: 200px;
             background: rgba(250, 245, 240, 0.95);
             backdrop-filter: blur(20px);
-            border-radius: 50px;
+            border-radius: 60px;
             display: flex;
-            justify-content: space-around;
-            padding: 6px 12px;
+            justify-content: center;
+            padding: 6px 20px;
             box-shadow: 0 8px 20px rgba(0,0,0,0.15);
             z-index: 40;
             border: 1px solid rgba(255,245,235,0.5);
         }
-        .nav-icon-btn {
+        .home-nav-btn {
             background: transparent;
             border: none;
-            font-size: 0.7rem;
+            font-size: 0.8rem;
             color: #b38b6e;
             padding: 8px 18px;
             border-radius: 50px;
             display: flex;
             align-items: center;
-            gap: 6px;
-            font-weight: 500;
+            gap: 8px;
+            font-weight: 600;
             transition: 0.1s;
+            cursor: pointer;
         }
-        .nav-icon-btn i {
-            font-size: 1.2rem;
+        .home-nav-btn i {
+            font-size: 1.3rem;
         }
-        .nav-icon-btn.active {
+        .home-nav-btn.active {
             background: #e4d5c9;
             color: #7c5c44;
-        }
-        .badge-icon {
-            background: #b17a58;
-            color: white;
-            border-radius: 40px;
-            padding: 0px 6px;
-            font-size: 0.6rem;
-            margin-right: -5px;
         }
         /* مودال الطلب */
         .modal-order {
@@ -350,7 +343,7 @@
             color: #f0e2d8;
         }
         body.dark-mode .glass-navbar,
-        body.dark-mode .floating-bottom-nav {
+        body.dark-mode .single-bottom-nav {
             background: rgba(30,25,21,0.85);
         }
         body.dark-mode .top-tab.active {
@@ -385,10 +378,9 @@
     </div>
 </div>
 
-<!-- تبويب سفلي للرئيسية والسلة -->
-<div class="floating-bottom-nav">
-    <button class="nav-icon-btn active" data-nav="home"><i class="bi bi-house-door"></i> الرئيسية</button>
-    <button class="nav-icon-btn" data-nav="cart"><i class="bi bi-cart"></i> السلة <span id="cartBadgeFloat" class="badge-icon" style="display:none;">0</span></button>
+<!-- تبويب سفلي واحد (الرئيسية) -->
+<div class="single-bottom-nav">
+    <button class="home-nav-btn" id="homeNavBtn"><i class="bi bi-house-door-fill"></i> الرئيسية</button>
 </div>
 
 <div id="toastMsg" class="toast-msg"></div>
@@ -405,21 +397,19 @@
 </div>
 
 <script>
-    let products = [], cart = [], currentFilter = "all", pendingOrderData = null;
+    let products = [], cart = [], pendingOrderData = null;
     let currentTopTab = "store";    // المنتجات/السلة/الدردشة
-    let currentNav = "home";         // التبويب السفلي (يؤثر على اظهار store/cart فقط)
-    const whatsappNumber = "967730577358";
 
     function showToast(msg) { let t = document.getElementById("toastMsg"); t.innerText = msg; t.style.opacity = "1"; setTimeout(() => t.style.opacity = "0", 1800); }
     async function fetchProducts() { let res = await fetch('/api/products'); products = await res.json(); renderStore(); }
-    function saveCart() { localStorage.setItem("hibe_cart", JSON.stringify(cart)); updateBadge(); if(currentTopTab === 'cart' && currentNav === 'cart') renderCart(); }
-    function loadCart() { let saved = localStorage.getItem("hibe_cart"); cart = saved ? JSON.parse(saved) : []; updateBadge(); if(currentTopTab === 'cart' && currentNav === 'cart') renderCart(); }
-    function updateBadge() { let total = cart.reduce((s,i)=>s+i.qty,0); let badge = document.getElementById("cartBadgeFloat"); if(total>0) { badge.style.display="inline-block"; badge.innerText=total>9?"9+":total; } else badge.style.display="none"; }
-    function addToCart(pid,qty=1) { let prod=products.find(p=>p.id===pid); if(!prod) return; let ex=cart.find(i=>i.id===pid); if(ex) ex.qty+=qty; else cart.push({id:pid,name:prod.name,price:prod.price,qty}); saveCart(); showToast(`✓ ${prod.name} أضيف للسلة`); if(currentTopTab==='cart' && currentNav==='cart') renderCart(); }
-    function removeItem(pid) { cart=cart.filter(i=>i.id!==pid); saveCart(); if(currentTopTab==='cart' && currentNav==='cart') renderCart(); }
-    function updateQty(pid,delta) { let item=cart.find(i=>i.id===pid); if(item){ let newQ=item.qty+delta; if(newQ<=0) removeItem(pid); else { item.qty=newQ; saveCart(); if(currentTopTab==='cart' && currentNav==='cart') renderCart(); } } }
-    function clearCart() { cart=[]; saveCart(); if(currentTopTab==='cart' && currentNav==='cart') renderCart(); showToast("تم تفريغ السلة"); }
-    function renderStore() { let grid = document.getElementById("storePanel"); let filtered = currentFilter==="all"?products:products.filter(p=>p.category===currentFilter); if(filtered.length===0){ grid.innerHTML="<div style='text-align:center;padding:30px;'>لا توجد منتجات</div>"; return; }
+    function saveCart() { localStorage.setItem("hibe_cart", JSON.stringify(cart)); if(currentTopTab === 'cart') renderCart(); }
+    function loadCart() { let saved = localStorage.getItem("hibe_cart"); cart = saved ? JSON.parse(saved) : []; if(currentTopTab === 'cart') renderCart(); }
+    function addToCart(pid,qty=1) { let prod=products.find(p=>p.id===pid); if(!prod) return; let ex=cart.find(i=>i.id===pid); if(ex) ex.qty+=qty; else cart.push({id:pid,name:prod.name,price:prod.price,qty}); saveCart(); showToast(`✓ ${prod.name} أضيف للسلة`); if(currentTopTab==='cart') renderCart(); }
+    function removeItem(pid) { cart=cart.filter(i=>i.id!==pid); saveCart(); if(currentTopTab==='cart') renderCart(); }
+    function updateQty(pid,delta) { let item=cart.find(i=>i.id===pid); if(item){ let newQ=item.qty+delta; if(newQ<=0) removeItem(pid); else { item.qty=newQ; saveCart(); if(currentTopTab==='cart') renderCart(); } } }
+    function clearCart() { cart=[]; saveCart(); if(currentTopTab==='cart') renderCart(); showToast("تم تفريغ السلة"); }
+    function renderStore() { let grid = document.getElementById("storePanel"); let filtered = products; // نعرض الكل بدون فلتر للتبسيط (يمكن إضافة فلتر لاحقاً)
+        if(filtered.length===0){ grid.innerHTML="<div style='text-align:center;padding:30px;'>لا توجد منتجات</div>"; return; }
         grid.innerHTML = filtered.map(prod=>`<div class="prestige-card"><div class="product-img"><i class="${prod.icon}"></i></div><div class="product-info"><div class="product-title">${prod.name}</div><div class="product-price">${prod.price} ر.س</div><div class="double-buttons"><button class="icon-btn-sm addCartBtn" data-id="${prod.id}"><i class="bi bi-cart-plus"></i> سلة</button><button class="icon-btn-sm shareBtn" data-id="${prod.id}"><i class="bi bi-share"></i> مشاركة</button></div><button class="full-whatsapp-btn whatsapp-order" data-prod='${JSON.stringify({id:prod.id,name:prod.name,price:prod.price,qty:1})}'><i class="bi bi-whatsapp"></i> طلب عبر واتساب</button></div></div>`).join('');
         document.querySelectorAll(".addCartBtn").forEach(btn=>btn.addEventListener("click",(e)=>{e.stopPropagation(); addToCart(parseInt(btn.dataset.id));}));
         document.querySelectorAll(".shareBtn").forEach(btn=>btn.addEventListener("click",(e)=>{ e.stopPropagation(); let id=parseInt(btn.dataset.id); let product=products.find(p=>p.id===id); navigator.clipboard.writeText(window.location.href.split('?')[0]+"?product="+id); showToast(`📎 نسخ رابط ${product.name}`); }));
@@ -438,7 +428,7 @@
         let details=""; if(pendingOrderData?.type==='single'){ let p=pendingOrderData.product; details=`المنتج: ${p.name}\nالسعر: ${p.price} ر.س\nالكمية: ${p.qty}\nالإجمالي: ${p.price*p.qty} ر.س`; }
         else if(pendingOrderData?.type==='cart'){ details=pendingOrderData.items.map(i=>`${i.name} (${i.qty}×${i.price}=${i.price*i.qty} ر.س)`).join('\n'); details+=`\nالإجمالي الكلي: ${pendingOrderData.total} ر.س`; }
         let msg=`🌿 طلب جديد من HIBE STORE 🌿\n👤 الاسم: ${name}\n📍 العنوان: ${address}\n📞 الجوال: ${phone}\n📝 ملاحظات: ${notes}\n📌 تفاصيل الطلب:\n${details}`;
-        window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(msg)}`,'_blank');
+        window.open(`https://wa.me/967730577358?text=${encodeURIComponent(msg)}`,'_blank');
         fetch('/api/orders', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ customerName:name, address, phone, notes, items:pendingOrderData?.type==='cart'?pendingOrderData.items:[pendingOrderData?.product], total:pendingOrderData?.total||(pendingOrderData?.product.price*pendingOrderData?.product.qty) }) });
         document.getElementById("orderModal").classList.remove("show"); showToast("تم التوجيه إلى واتساب");
     }
@@ -448,40 +438,35 @@
     async function sendMessage(text, sender='user') { let msg={ sender, text, timestamp:new Date().toISOString() }; await fetch('/api/messages', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(msg) }); loadMessages(); }
     function renderChat() { let container = document.getElementById("chatMessages"); if(!container) return; container.innerHTML = messages.map(m=>`<div class="message ${m.sender}"><b>${m.sender==='user'?'أنت':'الإدارة'}</b><br>${m.text}<br><small>${new Date(m.timestamp).toLocaleTimeString()}</small></div>`).join(''); container.scrollTop = container.scrollHeight; }
     document.getElementById("sendChatBtn")?.addEventListener("click",()=>{ let input=document.getElementById("chatInput"); if(input.value.trim()){ sendMessage(input.value.trim(), 'user'); input.value=""; } });
+
     // التحكم بالتبويبات العلوية والسفلية
     function setTopTab(tab) {
         currentTopTab = tab;
         document.querySelectorAll(".top-tab").forEach(btn=>btn.classList.toggle("active", btn.dataset.top === tab));
-        document.getElementById("storePanel").style.display = (tab === 'store' && currentNav === 'home') ? 'grid' : 'none';
-        document.getElementById("cartPanel").style.display = (tab === 'cart' && currentNav === 'cart') ? 'block' : 'none';
+        document.getElementById("storePanel").style.display = (tab === 'store') ? 'grid' : 'none';
+        document.getElementById("cartPanel").style.display = (tab === 'cart') ? 'block' : 'none';
         document.getElementById("chatPanel").style.display = (tab === 'chat') ? 'block' : 'none';
-        if(tab === 'cart' && currentNav === 'cart') renderCart();
+        if(tab === 'cart') renderCart();
         if(tab === 'chat') loadMessages();
     }
-    function setNav(nav) {
-        currentNav = nav;
-        document.querySelectorAll(".nav-icon-btn").forEach(btn=>btn.classList.toggle("active", btn.dataset.nav === nav));
-        if(nav === 'home') {
-            // اظهار تبويب المنتجات فقط في الأسفل
-            setTopTab(currentTopTab === 'cart' ? 'store' : currentTopTab);
-        } else {
-            // اظهار السلة
-            setTopTab('cart');
-        }
+    // زر الرئيسية في الأسفل: يعيد تعيين التبويب العلوي إلى "المنتجات"
+    function resetToHome() {
+        setTopTab('store');
     }
+
     // ربط الأحداث
     document.querySelectorAll(".top-tab").forEach(btn=>btn.addEventListener("click",()=>setTopTab(btn.dataset.top)));
-    document.querySelectorAll(".nav-icon-btn").forEach(btn=>btn.addEventListener("click",()=>setNav(btn.dataset.nav)));
+    document.getElementById("homeNavBtn").addEventListener("click", resetToHome);
+
     // الوضع الليلي
     function setupDarkMode(){ let isDark=localStorage.getItem("hibe_dark")==="true"; if(isDark) document.body.classList.add("dark-mode"); document.getElementById("darkModeBtn").addEventListener("click",()=>{ document.body.classList.toggle("dark-mode"); localStorage.setItem("hibe_dark",document.body.classList.contains("dark-mode")); }); }
-    // تصنيفات (اختياري) - يمكن إضافتها لاحقاً، سنضيف شريط تصنيفات بسيط
+
     async function init() {
         await fetchProducts();
         loadCart();
         setupDarkMode();
         document.getElementById("sendWhatsappBtn").addEventListener("click",sendWhatsAppOrder);
         document.getElementById("closeOrderModal").addEventListener("click",()=>document.getElementById("orderModal").classList.remove("show"));
-        setNav('home');
         setTopTab('store');
     }
     init();
