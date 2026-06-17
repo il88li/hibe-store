@@ -14,7 +14,6 @@
             --glass-white: rgba(255,255,255,0.7);
             --glass-blue: rgba(26,115,232,0.15);
             --text-dark: #1a1a2e;
-            --text-light: #f8f9fa;
             --shadow: 0 8px 32px rgba(0,0,0,0.08);
         }
         body {
@@ -62,7 +61,7 @@
             border: 1px solid rgba(255,255,255,0.3);
         }
 
-        /* ---------- القسم العلوي (صورة فقط) ---------- */
+        /* ---------- القسم العلوي (صورة فقط، تظهر في التبويب الرئيسي) ---------- */
         .hero-section {
             position: relative;
             height: 50vh;
@@ -81,7 +80,7 @@
             text-align: center;
             color: white;
             padding: 20px 16px;
-            transition: opacity 0.4s ease, transform 0.4s ease;
+            transition: opacity 0.3s ease, max-height 0.3s ease, margin 0.3s ease, padding 0.3s ease;
         }
         .hero-section::before {
             content: '';
@@ -148,19 +147,20 @@
             0%, 100% { transform: translateX(-50%) translateY(0); }
             50% { transform: translateX(-50%) translateY(-6px); }
         }
-        .hero-section.hidden {
+        /* إخفاء القسم العلوي عند عدم وجوده في التبويب الرئيسي */
+        .hero-section.hidden-hero {
             opacity: 0;
-            transform: scale(0.95);
-            pointer-events: none;
             max-height: 0;
             min-height: 0;
             height: 0;
             margin: 0 8px;
-            padding: 0;
+            padding: 0 16px;
             overflow: hidden;
             border-radius: 0;
-            transition: opacity 0.5s, transform 0.5s, max-height 0.5s, margin 0.5s, padding 0.5s;
+            pointer-events: none;
+            transition: opacity 0.3s ease, max-height 0.3s ease, margin 0.3s ease, padding 0.3s ease;
         }
+        .hero-section.hidden-hero::before { border-radius: 0; }
 
         /* ---------- بطاقة الخدمات (زجاجية) ---------- */
         .services-card {
@@ -198,7 +198,7 @@
         .complaint-btn:hover { background: #1557b0; transform: translateY(-2px); }
         .complaint-btn i { margin-left: 6px; }
 
-        /* ---------- شريط التصنيفات (زوايا حادة قليلاً) ---------- */
+        /* ---------- شريط التصنيفات ---------- */
         .categories-nav { margin: 6px 0 10px; }
         .categories-list {
             display: flex;
@@ -531,7 +531,7 @@
             font-family: inherit;
         }
 
-        /* ---------- Dark Mode (زجاجي داكن) ---------- */
+        /* ---------- Dark Mode ---------- */
         body.dark-mode {
             background: linear-gradient(145deg, #0f172a 0%, #1e293b 100%);
         }
@@ -585,7 +585,7 @@
             <button class="theme-icon-btn" id="darkModeBtn" aria-label="الوضع الليلي"><i class="bi bi-moon-stars"></i></button>
         </header>
 
-        <!-- القسم العلوي (صورة خلفية فقط) -->
+        <!-- القسم العلوي (صورة خلفية) – سيظهر فقط في التبويب "الرئيسية" -->
         <section class="hero-section" id="heroSection">
             <h1 class="hero-title">أهلاً بك في <span>HIBE STORE</span></h1>
             <p class="hero-subtitle">صيف 2026 .. أناقة لا تُضاهى، راحة لا توصف</p>
@@ -627,7 +627,6 @@
                 <div id="cartTotal" class="cart-total"></div>
             </section>
             <section id="aboutPanel" class="about-panel">
-                <!-- بطاقة "حول" مع صور -->
                 <article class="about-card">
                     <img src="https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=600&q=80" alt="أزياء صيفية">
                     <h2><i class="bi bi-stars"></i> صيحة الصيف 2026</h2>
@@ -657,7 +656,7 @@
             </section>
         </main>
 
-        <!-- التبويب السفلي (أصغر وأقل عرضاً) -->
+        <!-- التبويب السفلي -->
         <nav class="bottom-nav">
             <ul class="bottom-nav-list">
                 <li><button class="nav-btn active" data-nav="store"><i class="bi bi-grid-3x3-gap-fill"></i> الرئيسية</button></li>
@@ -696,16 +695,7 @@
             setTimeout(() => t.style.opacity = "0", 2000);
         }
 
-        // تأثير التمرير على القسم العلوي
-        function setupHeroScrollEffect() {
-            const hero = document.getElementById('heroSection');
-            window.addEventListener('scroll', () => {
-                if (window.scrollY > 100) hero.classList.add('hidden');
-                else hero.classList.remove('hidden');
-            }, { passive: true });
-        }
-
-        // جلب المنتجات وبناء التصنيفات
+        // ----------------------- جلب المنتجات وبناء التصنيفات -----------------------
         async function fetchProducts() {
             try {
                 const res = await fetch('/api/products');
@@ -741,7 +731,7 @@
             });
         }
 
-        // إدارة السلة
+        // ----------------------- إدارة السلة -----------------------
         function saveCart() {
             localStorage.setItem("hibe_cart", JSON.stringify(cart));
             updateBadge();
@@ -785,7 +775,7 @@
             }
         }
 
-        // عرض المنتجات والسلة
+        // ----------------------- عرض المنتجات والسلة -----------------------
         function renderStore() {
             const grid = document.getElementById("storePanel");
             if (!grid) return;
@@ -888,7 +878,7 @@
             }
         }
 
-        // إرسال طلب واتساب
+        // ----------------------- إرسال طلب واتساب -----------------------
         function sendWhatsAppOrder() {
             const name = document.getElementById("orderName").value.trim();
             const phone = document.getElementById("orderPhone").value.trim();
@@ -918,7 +908,7 @@
             showToast("تم التوجيه إلى واتساب");
         }
 
-        // تحميل إعدادات التوصيل
+        // ----------------------- تحميل إعدادات التوصيل -----------------------
         function loadDeliverySettings() {
             const settings = localStorage.getItem("hibe_region");
             if (settings) {
@@ -928,9 +918,17 @@
             }
         }
 
-        // التنقل بين التبويبات
+        // ----------------------- التنقل بين التبويبات (مع إظهار/إخفاء القسم العلوي) -----------------------
         function setNav(nav) {
             currentNav = nav;
+            const hero = document.getElementById('heroSection');
+            // إظهار القسم العلوي فقط في تبويب "الرئيسية"
+            if (nav === 'store') {
+                hero.classList.remove('hidden-hero');
+            } else {
+                hero.classList.add('hidden-hero');
+            }
+
             document.querySelectorAll(".nav-btn").forEach(btn => btn.classList.toggle("active", btn.dataset.nav === nav));
             document.getElementById("storePanel").style.display = nav === 'store' ? 'grid' : 'none';
             document.getElementById("cartPanel").style.display = nav === 'cart' ? 'block' : 'none';
@@ -940,7 +938,7 @@
             if (nav === 'store') renderStore();
         }
 
-        // الوضع الليلي
+        // ----------------------- الوضع الليلي -----------------------
         function setupDarkMode() {
             const isDark = localStorage.getItem("hibe_dark") === "true";
             if (isDark) document.body.classList.add("dark-mode");
@@ -950,13 +948,12 @@
             });
         }
 
-        // تهيئة الصفحة
+        // ----------------------- تهيئة الصفحة -----------------------
         async function init() {
             await fetchProducts();
             loadCart();
             setupDarkMode();
             loadDeliverySettings();
-            setupHeroScrollEffect();
 
             document.getElementById("sendWhatsappBtn").addEventListener("click", sendWhatsAppOrder);
             document.getElementById("closeOrderModal").addEventListener("click", () => document.getElementById("orderModal").classList.remove("show"));
