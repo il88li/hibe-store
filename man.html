@@ -143,21 +143,34 @@
         }
         .admin-product-img {
             width: 100%;
-            aspect-ratio: 9 / 6;
+            height: 0;
+            padding-bottom: 55.555%;
             background: var(--glass-blue);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            color: var(--primary-blue);
-            overflow: hidden;
             position: relative;
+            overflow: hidden;
         }
         .admin-product-img img {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
             object-fit: cover;
+            object-position: center;
             display: block;
+        }
+        .admin-product-img .img-fallback {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: var(--primary-blue);
+            background: var(--glass-blue);
         }
         .admin-product-info { padding: 14px; }
         .admin-product-title { font-size: 1rem; font-weight: 800; color: var(--text-dark); margin-bottom: 4px; }
@@ -662,7 +675,7 @@
                     </div>
                 </div>
                 <div class="admin-product-img">
-                    ${prod.image_url ? `<img src="${prod.image_url}" alt="${prod.name}" loading="lazy">` : `<i class="${prod.icon}"></i>`}
+                    ${prod.image_url ? `<img src="${prod.image_url}" alt="${prod.name}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><div class="img-fallback" style="display:none;"><i class="bi bi-image"></i></div>` : `<div class="img-fallback"><i class="${prod.icon || 'bi bi-tag'}"></i></div>`}
                 </div>
                 <div class="admin-product-info">
                     <div class="admin-product-title">${prod.name}</div>
