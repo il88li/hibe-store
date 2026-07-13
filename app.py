@@ -1,4 +1,4 @@
-# app.py - خادم Flask مع PostgreSQL لتخزين المنتجات والتصنيفات والطلبات
+# app.py - خادم Flask مع PostgreSQL لتخزين المنتجات والتصنيفات والطلبات وأماكن التوصيل
 import json
 import os
 from datetime import datetime
@@ -68,6 +68,15 @@ def init_db():
             total NUMERIC(10,2),
             status TEXT DEFAULT 'قيد التسليم',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
+    # جدول مناطق التوصيل (محافظات + مديريات)
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS delivery_regions (
+            id SERIAL PRIMARY KEY,
+            name TEXT NOT NULL,
+            districts JSONB DEFAULT '[]'
         )
     """)
 
@@ -201,6 +210,88 @@ def update_order_status(order_id, status):
     conn.close()
     return updated
 
+# ------------------ مناطق التوصيل ------------------
+def get_all_delivery_regions():
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM delivery_regions ORDER BY id DESC")
+    regions = cur.fetchall()
+    cur.close()
+    conn.close()
+    # Convert districts from JSONB to list
+    for region in regions:
+        if region['districts'] is None:
+            region['districts'] = []
+        elif isinstance(region['districts'], str):
+            region['districts'] = json.loads(region['districts'])
+    return regions
+
+def add_delivery_region(name):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute(
+        "INSERT INTO delivery_regions (name, districts) VALUES (%s, %s) RETURNING *",
+        (name, json.dumps([]))
+    )
+    new_region = cur.fetchone()
+    conn.commit()
+    cur.close()
+    conn.close()
+    return new_region
+
+def update_delivery_region(region_id, name):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("UPDATE delivery_regions SET name = %s WHERE id = %s RETURNING *", (name, region_id))
+    updated = cur.fetchone()
+    conn.commit()
+    cur.close()
+    conn.close()
+    return updated
+
+def delete_delivery_region(region_id):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM delivery_regions WHERE id = %s", (region_id,))
+    conn.commit()
+    cur.close()
+    conn.close()
+
+def add_district_to_region(region_id, district_name):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT districts FROM delivery_regions WHERE id = %s", (region_id,))
+    row = cur.fetchone()
+    if row:
+        districts = row['districts']
+        if districts is None:
+            districts = []
+        elif isinstance(districts, str):
+            districts = json.loads(districts)
+        districts.append(district_name)
+        cur.execute("UPDATE delivery_regions SET districts = %s WHERE id = %s", (json.dumps(districts), region_id))
+        conn.commit()
+    cur.close()
+    conn.close()
+
+def delete_district_from_region(region_id, district_index):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT districts FROM delivery_regions WHERE id = %s", (region_id,))
+    row = cur.fetchone()
+    if row:
+        districts = row['districts']
+        if districts is None:
+            districts = []
+        elif isinstance(districts, str):
+            districts = json.loads(districts)
+        if 0 <= district_index < len(districts):
+            districts.pop(district_index)
+            cur.execute("UPDATE delivery_regions SET districts = %s WHERE id = %s", (json.dumps(districts), region_id))
+            conn.commit()
+    cur.close()
+    conn.close()
+
 # ------------------ واجهات API ------------------
 @app.route('/api/products', methods=['GET'])
 def get_products():
@@ -316,7 +407,7 @@ def create_order():
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/orders/<int:order_id>', methods=['PUT'])
-def update_order_status(order_id):
+def update_order(order_id):
     data = request.get_json()
     new_status = data.get('status')
     try:
@@ -325,6 +416,68 @@ def update_order_status(order_id):
             return jsonify(updated)
         else:
             return jsonify({'error': 'الطلب غير موجود'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# ------------------ مناطق التوصيل API ------------------
+@app.route('/api/delivery-regions', methods=['GET'])
+def get_delivery_regions():
+    regions = get_all_delivery_regions()
+    return jsonify(regions)
+
+@app.route('/api/delivery-regions', methods=['POST'])
+def create_delivery_region():
+    data = request.get_json()
+    name = data.get('name')
+    if not name:
+        return jsonify({'error': 'اسم المحافظة مطلوب'}), 400
+    try:
+        new_region = add_delivery_region(name)
+        return jsonify(new_region), 201
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/delivery-regions/<int:region_id>', methods=['PUT'])
+def update_delivery_region_api(region_id):
+    data = request.get_json()
+    name = data.get('name')
+    if not name:
+        return jsonify({'error': 'اسم المحافظة مطلوب'}), 400
+    try:
+        updated = update_delivery_region(region_id, name)
+        if updated:
+            return jsonify(updated)
+        else:
+            return jsonify({'error': 'المحافظة غير موجودة'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/delivery-regions/<int:region_id>', methods=['DELETE'])
+def delete_delivery_region_api(region_id):
+    try:
+        delete_delivery_region(region_id)
+        return jsonify({'message': 'تم الحذف'}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/delivery-regions/district', methods=['POST'])
+def add_district():
+    data = request.get_json()
+    region_id = data.get('governorate_id')
+    district_name = data.get('name')
+    if not region_id or not district_name:
+        return jsonify({'error': 'معرف المحافظة واسم المديرية مطلوبان'}), 400
+    try:
+        add_district_to_region(region_id, district_name)
+        return jsonify({'message': 'تمت الإضافة'}), 201
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/delivery-regions/<int:region_id>/district/<int:district_index>', methods=['DELETE'])
+def delete_district(region_id, district_index):
+    try:
+        delete_district_from_region(region_id, district_index)
+        return jsonify({'message': 'تم الحذف'}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
