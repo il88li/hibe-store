@@ -346,6 +346,112 @@
             object-fit: contain;
         }
 
+        /* ===== أماكن التوصيل - بطاقات المحافظات ===== */
+        .governorates-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 16px;
+            padding: 8px 0 20px;
+        }
+        .governorate-card-admin {
+            background: var(--glass-white);
+            backdrop-filter: blur(8px);
+            border-radius: 14px;
+            padding: 16px;
+            border: 1px solid rgba(255,255,255,0.5);
+            box-shadow: var(--shadow);
+            transition: transform 0.2s ease;
+        }
+        .governorate-card-admin:hover { transform: translateY(-2px); }
+        .governorate-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+        }
+        .governorate-name {
+            font-weight: 800;
+            font-size: 1rem;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .governorate-name i { color: var(--primary-blue); }
+        .governorate-actions { display: flex; gap: 6px; }
+        .governorate-actions button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            padding: 4px;
+            border-radius: 4px;
+            transition: 0.15s;
+        }
+        .governorate-actions .btn-edit-gov { color: var(--primary-blue); }
+        .governorate-actions .btn-delete-gov { color: #dc2626; }
+        .governorate-actions button:hover { background: var(--glass-blue); }
+        .districts-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+        .district-chip {
+            background: var(--glass-blue);
+            padding: 4px 10px;
+            border-radius: 16px;
+            font-size: 0.75rem;
+            color: #555;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        .district-chip button {
+            background: none;
+            border: none;
+            color: #b14a3a;
+            cursor: pointer;
+            font-size: 0.7rem;
+            padding: 0;
+            margin-right: 2px;
+        }
+        .add-district-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .add-district-row input {
+            flex: 1;
+            padding: 6px 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(0,0,0,0.1);
+            font-family: inherit;
+            font-size: 0.8rem;
+            background: rgba(255,255,255,0.5);
+        }
+        .add-district-row button {
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .no-districts-msg {
+            font-size: 0.75rem;
+            color: #888;
+            font-style: italic;
+            text-align: center;
+            padding: 8px 0;
+        }
+
         /* مودالات */
         .modal {
             position: fixed;
@@ -470,7 +576,8 @@
         body.dark-mode .modal-content,
         body.dark-mode .stat-card,
         body.dark-mode .region-card,
-        body.dark-mode .admin-product-card {
+        body.dark-mode .admin-product-card,
+        body.dark-mode .governorate-card-admin {
             background: rgba(30, 41, 59, 0.8);
             border-color: rgba(255,255,255,0.1);
             color: #e2e8f0;
@@ -503,6 +610,11 @@
         body.dark-mode .admin-product-description { color: #94a3b8; }
         body.dark-mode .modal-content h3 { color: #e2e8f0; }
         body.dark-mode .checkbox-row { color: #e2e8f0; }
+        body.dark-mode .governorate-name { color: #e2e8f0; }
+        body.dark-mode .governorate-header { border-color: rgba(255,255,255,0.1); }
+        body.dark-mode .district-chip { color: #94a3b8; background: rgba(96,165,250,0.1); }
+        body.dark-mode .add-district-row input { background: rgba(255,255,255,0.08); color: #e2e8f0; border-color: rgba(255,255,255,0.1); }
+        body.dark-mode .no-districts-msg { color: #64748b; }
     </style>
 </head>
 <body>
@@ -518,7 +630,7 @@
             <li><button class="tab-btn" data-tab="categories"><i class="bi bi-tags"></i> التصنيفات</button></li>
             <li><button class="tab-btn" data-tab="orders"><i class="bi bi-clipboard"></i> الطلبات</button></li>
             <li><button class="tab-btn" data-tab="stats"><i class="bi bi-bar-chart"></i> إحصائيات</button></li>
-            <li><button class="tab-btn" data-tab="regions"><i class="bi bi-truck"></i> مناطق النقل</button></li>
+            <li><button class="tab-btn" data-tab="regions"><i class="bi bi-geo-alt"></i> مناطق التوصيل</button></li>
         </ul>
     </nav>
 
@@ -555,13 +667,10 @@
         <div class="stats-grid" id="statsContainer"></div>
     </section>
 
-    <!-- مناطق النقل -->
+    <!-- مناطق التوصيل -->
     <section id="regionsPanel" class="panel">
-        <div class="region-card">
-            <img id="regionImagePreview" src="https://img.sanishtech.com/u/130d1b77889fb2e2f250198b86ae6a96.png" alt="منطقة النقل">
-            <p id="regionTextPreview" style="margin:10px 0;">التوصيل متاح في صنعاء فقط</p>
-            <button id="editRegionBtn" class="add-btn"><i class="bi bi-pencil"></i> تعديل</button>
-        </div>
+        <button id="addGovernorateBtn" class="add-btn"><i class="bi bi-plus-lg"></i> إضافة محافظة</button>
+        <div id="governoratesGrid" class="governorates-grid"></div>
     </section>
 </div>
 
@@ -614,15 +723,14 @@
     </div>
 </div>
 
-<!-- مودال منطقة النقل -->
-<div id="regionModal" class="modal">
+<!-- مودال إضافة/تعديل محافظة -->
+<div id="governorateModal" class="modal">
     <div class="modal-content">
-        <h3><i class="bi bi-truck"></i> تعديل منطقة النقل</h3>
-        <input type="url" id="regionImage" placeholder="رابط الصورة">
-        <textarea id="regionText" rows="2" placeholder="نص التوصيل"></textarea>
+        <h3 id="governorateModalTitle"><i class="bi bi-geo-alt"></i> إضافة محافظة</h3>
+        <input type="text" id="govName" placeholder="اسم المحافظة *">
         <div class="modal-buttons">
-            <button id="saveRegionBtn" class="save-btn">حفظ</button>
-            <button id="cancelRegionBtn" class="cancel-btn">إلغاء</button>
+            <button id="saveGovernorateBtn" class="save-btn">حفظ</button>
+            <button id="cancelGovernorateBtn" class="cancel-btn">إلغاء</button>
         </div>
     </div>
 </div>
@@ -630,6 +738,7 @@
 <script>
     // ----------------------- دوال مساعدة -----------------------
     let editingProductId = null;
+    let editingGovernorateId = null;
     function showToast(msg) {
         const t = document.getElementById("toastMsg");
         t.innerText = msg;
@@ -948,31 +1057,124 @@
         } catch(e) { showToast("خطأ في الإحصائيات"); }
     }
 
-    // ----------------------- مناطق النقل -----------------------
-    let regionSettings = { image: "https://img.sanishtech.com/u/130d1b77889fb2e2f250198b86ae6a96.png", text: "التوصيل متاح في صنعاء فقط" };
-    function loadRegionSettings() {
-        const stored = localStorage.getItem("hibe_region");
-        if (stored) regionSettings = JSON.parse(stored);
-        updateRegionUI();
+    // ----------------------- مناطق التوصيل (محافظات + مديريات) -----------------------
+    async function loadGovernorates() {
+        try {
+            const regions = await fetchAPI('/api/delivery-regions');
+            renderGovernorates(regions);
+        } catch(e) { showToast("خطأ في تحميل مناطق التوصيل"); }
     }
-    function updateRegionUI() {
-        document.getElementById("regionImagePreview").src = regionSettings.image;
-        document.getElementById("regionTextPreview").innerText = regionSettings.text;
+
+    function renderGovernorates(regions) {
+        const grid = document.getElementById("governoratesGrid");
+        if (!grid) return;
+        if (regions.length === 0) {
+            grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:40px; color:#888;"><i class="bi bi-geo-alt" style="font-size:2.5rem; color:var(--primary-blue); display:block; margin-bottom:12px;"></i><p>لا توجد محافظات مضافة بعد.</p></div>`;
+            return;
+        }
+        grid.innerHTML = regions.map(gov => {
+            const districts = gov.districts || [];
+            const districtsHtml = districts.length > 0
+                ? districts.map((d, idx) => `<span class="district-chip">${d} <button onclick="deleteDistrict(${gov.id}, ${idx}, event)" title="حذف"><i class="bi bi-x"></i></button></span>`).join('')
+                : `<p class="no-districts-msg">لا توجد مديريات/أحياء مضافة</p>`;
+
+            return `
+            <div class="governorate-card-admin" data-id="${gov.id}">
+                <div class="governorate-header">
+                    <div class="governorate-name"><i class="bi bi-geo-alt-fill"></i> ${gov.name}</div>
+                    <div class="governorate-actions">
+                        <button class="btn-edit-gov" onclick="editGovernorate(${gov.id})" title="تعديل"><i class="bi bi-pencil"></i></button>
+                        <button class="btn-delete-gov" onclick="deleteGovernorate(${gov.id})" title="حذف"><i class="bi bi-trash3"></i></button>
+                    </div>
+                </div>
+                <div class="districts-container" id="districts-${gov.id}">
+                    ${districtsHtml}
+                </div>
+                <div class="add-district-row">
+                    <input type="text" id="districtInput-${gov.id}" placeholder="أضف مديرية/حي/شارع/قرية...">
+                    <button onclick="addDistrict(${gov.id})"><i class="bi bi-plus-lg"></i> إضافة</button>
+                </div>
+            </div>
+            `;
+        }).join('');
     }
-    function openRegionModal() {
-        document.getElementById("regionImage").value = regionSettings.image;
-        document.getElementById("regionText").value = regionSettings.text;
-        document.getElementById("regionModal").classList.add("show");
+
+    async function addDistrict(govId) {
+        const input = document.getElementById(`districtInput-${govId}`);
+        const name = input.value.trim();
+        if (!name) { showToast("أدخل اسم المديرية/الحي"); return; }
+        try {
+            await fetchAPI('/api/delivery-regions/district', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ governorate_id: govId, name })
+            });
+            showToast("تمت الإضافة");
+            input.value = "";
+            loadGovernorates();
+        } catch(e) { showToast("فشل الإضافة"); }
     }
-    function saveRegionSettings() {
-        const newImage = document.getElementById("regionImage").value.trim();
-        const newText = document.getElementById("regionText").value.trim();
-        if (newImage) regionSettings.image = newImage;
-        if (newText) regionSettings.text = newText;
-        localStorage.setItem("hibe_region", JSON.stringify(regionSettings));
-        updateRegionUI();
-        document.getElementById("regionModal").classList.remove("show");
-        showToast("تم التحديث");
+
+    async function deleteDistrict(govId, districtIndex, event) {
+        event.stopPropagation();
+        if (!confirm("حذف هذا العنوان؟")) return;
+        try {
+            await fetchAPI(`/api/delivery-regions/${govId}/district/${districtIndex}`, { method: 'DELETE' });
+            showToast("تم الحذف");
+            loadGovernorates();
+        } catch(e) { showToast("فشل الحذف"); }
+    }
+
+    function openGovernorateModal() {
+        editingGovernorateId = null;
+        document.getElementById("governorateModalTitle").innerHTML = '<i class="bi bi-geo-alt"></i> إضافة محافظة';
+        document.getElementById("govName").value = "";
+        document.getElementById("governorateModal").classList.add("show");
+    }
+
+    async function editGovernorate(id) {
+        try {
+            const regions = await fetchAPI('/api/delivery-regions');
+            const gov = regions.find(r => r.id === id);
+            if (!gov) { showToast("المحافظة غير موجودة"); return; }
+            editingGovernorateId = id;
+            document.getElementById("governorateModalTitle").innerHTML = '<i class="bi bi-pencil-square"></i> تعديل محافظة';
+            document.getElementById("govName").value = gov.name;
+            document.getElementById("governorateModal").classList.add("show");
+        } catch(e) { showToast("خطأ في تحميل البيانات"); }
+    }
+
+    async function saveGovernorate() {
+        const name = document.getElementById("govName").value.trim();
+        if (!name) { showToast("أدخل اسم المحافظة"); return; }
+        try {
+            if (editingGovernorateId) {
+                await fetchAPI(`/api/delivery-regions/${editingGovernorateId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name })
+                });
+                showToast("تم التعديل");
+            } else {
+                await fetchAPI('/api/delivery-regions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name })
+                });
+                showToast("تمت الإضافة");
+            }
+            document.getElementById("governorateModal").classList.remove("show");
+            loadGovernorates();
+        } catch(e) { showToast("فشل الحفظ: " + e.message); }
+    }
+
+    async function deleteGovernorate(id) {
+        if (!confirm("حذف المحافظة وجميع المديريات التابعة لها؟")) return;
+        try {
+            await fetchAPI(`/api/delivery-regions/${id}`, { method: 'DELETE' });
+            showToast("تم الحذف");
+            loadGovernorates();
+        } catch(e) { showToast("فشل الحذف"); }
     }
 
     // ----------------------- التنقل بين التبويبات -----------------------
@@ -984,7 +1186,7 @@
         else if (tab === 'categories') loadCategories();
         else if (tab === 'orders') loadOrders();
         else if (tab === 'stats') loadStats();
-        else if (tab === 'regions') loadRegionSettings();
+        else if (tab === 'regions') loadGovernorates();
     }
 
     // ----------------------- الوضع الليلي -----------------------
@@ -1004,9 +1206,9 @@
     document.getElementById("addCategoryBtn").addEventListener("click", openCategoryModal);
     document.getElementById("saveCategoryBtn").addEventListener("click", saveCategory);
     document.getElementById("cancelCategoryBtn").addEventListener("click", () => document.getElementById("categoryModal").classList.remove("show"));
-    document.getElementById("editRegionBtn").addEventListener("click", openRegionModal);
-    document.getElementById("saveRegionBtn").addEventListener("click", saveRegionSettings);
-    document.getElementById("cancelRegionBtn").addEventListener("click", () => document.getElementById("regionModal").classList.remove("show"));
+    document.getElementById("addGovernorateBtn").addEventListener("click", openGovernorateModal);
+    document.getElementById("saveGovernorateBtn").addEventListener("click", saveGovernorate);
+    document.getElementById("cancelGovernorateBtn").addEventListener("click", () => document.getElementById("governorateModal").classList.remove("show"));
     document.querySelectorAll(".tab-btn").forEach(btn => btn.addEventListener("click", () => setActiveTab(btn.dataset.tab)));
 
     // ----------------------- بدء التشغيل -----------------------
