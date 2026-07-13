@@ -24,10 +24,9 @@ load_dotenv()
 
 class Config:
     SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-change-me-in-production-64chars-long!!!')
-    # Force psycopg2 driver
     SQLALCHEMY_DATABASE_URI = os.getenv(
         'DATABASE_URL',
-        'postgresql+psycopg2://postgres:postgres@localhost:5432/hibe_store'
+        'postgresql://postgres:postgres@localhost:5432/hibe_store'
     )
     SQLALCHEMY_ENGINE_OPTIONS = {
         'pool_size': 20,
