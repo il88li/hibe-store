@@ -1,79 +1,11 @@
-2026-07-13T15:42:45.020311569Z Downloading Flask_JWT_Extended-4.6.0-py2.py3-none-any.whl (22 kB)
-2026-07-13T15:42:45.048820373Z Downloading Flask_Bcrypt-1.0.1-py3-none-any.whl (6.0 kB)
-2026-07-13T15:42:45.077607204Z Downloading Flask_Limiter-3.7.0-py3-none-any.whl (28 kB)
-2026-07-13T15:42:45.103545258Z Downloading Flask_Caching-2.3.0-py3-none-any.whl (28 kB)
-2026-07-13T15:42:45.132063542Z Downloading flask_talisman-1.1.0-py2.py3-none-any.whl (18 kB)
-2026-07-13T15:42:45.273983502Z Downloading wtforms-3.1.2-py3-none-any.whl (145 kB)
-2026-07-13T15:42:45.397683334Z Downloading python_dotenv-1.0.1-py3-none-any.whl (19 kB)
-2026-07-13T15:42:45.43114302Z Downloading gunicorn-23.0.0-py3-none-any.whl (85 kB)
-2026-07-13T15:42:45.471862101Z Downloading cachelib-0.9.0-py3-none-any.whl (15 kB)
-2026-07-13T15:42:45.509351054Z Downloading ordered_set-4.1.0-py3-none-any.whl (7.6 kB)
-2026-07-13T15:42:45.569005862Z Downloading pyjwt-2.13.0-py3-none-any.whl (31 kB)
-2026-07-13T15:42:45.621938519Z Downloading rich-13.9.4-py3-none-any.whl (242 kB)
-2026-07-13T15:42:45.677419815Z Downloading pygments-2.20.0-py3-none-any.whl (1.2 MB)
-2026-07-13T15:42:45.75676477Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.2/1.2 MB 12.7 MB/s  0:00:00
-2026-07-13T15:42:45.765563485Z Downloading bcrypt-5.0.0-cp39-abi3-manylinux_2_34_x86_64.whl (278 kB)
-2026-07-13T15:42:45.7989674Z Using cached blinker-1.9.0-py3-none-any.whl (8.5 kB)
-2026-07-13T15:42:45.8000988Z Using cached click-8.4.2-py3-none-any.whl (119 kB)
-2026-07-13T15:42:45.801275102Z Using cached itsdangerous-2.2.0-py3-none-any.whl (16 kB)
-2026-07-13T15:42:45.8023627Z Using cached jinja2-3.1.6-py3-none-any.whl (134 kB)
-2026-07-13T15:42:45.811036003Z Downloading limits-5.8.0-py3-none-any.whl (60 kB)
-2026-07-13T15:42:45.86469218Z Downloading deprecated-1.3.1-py2.py3-none-any.whl (11 kB)
-2026-07-13T15:42:45.980049058Z Downloading wrapt-2.2.2-cp314-cp314-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (167 kB)
-2026-07-13T15:42:46.148964752Z Downloading markdown_it_py-4.2.0-py3-none-any.whl (91 kB)
-2026-07-13T15:42:46.196044122Z Downloading mdurl-0.1.2-py3-none-any.whl (10.0 kB)
-2026-07-13T15:42:46.208355442Z Using cached markupsafe-3.0.3-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (23 kB)
-2026-07-13T15:42:46.217121877Z Downloading packaging-26.2-py3-none-any.whl (100 kB)
-2026-07-13T15:42:46.428335002Z Downloading sqlalchemy-2.0.51-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (3.3 MB)
-2026-07-13T15:42:46.525197186Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.3/3.3 MB 33.2 MB/s  0:00:00
-2026-07-13T15:42:46.535697037Z Downloading greenlet-3.5.3-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl (663 kB)
-2026-07-13T15:42:46.58546148Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 663.6/663.6 kB 8.6 MB/s  0:00:00
-2026-07-13T15:42:46.594582634Z Downloading typing_extensions-4.16.0-py3-none-any.whl (45 kB)
-2026-07-13T15:42:46.638243703Z Using cached werkzeug-3.1.8-py3-none-any.whl (226 kB)
-2026-07-13T15:42:46.669843709Z Building wheels for collected packages: psycopg2-binary
-2026-07-13T15:42:46.670832796Z   Building wheel for psycopg2-binary (pyproject.toml): started
-2026-07-13T15:42:54.559724438Z   Building wheel for psycopg2-binary (pyproject.toml): finished with status 'done'
-2026-07-13T15:42:54.560779017Z   Created wheel for psycopg2-binary: filename=psycopg2_binary-2.9.9-cp314-cp314-linux_x86_64.whl size=520602 sha256=2138f4dc40de37b08abe8e8d9ce0fcc2d968f562fb1618077746bccd10606f1b
-2026-07-13T15:42:54.560963352Z   Stored in directory: /opt/render/.cache/wheels/c3/32/82/3100cc73c25e9fc5edb501f987e0646995a473cdc05ae4755a
-2026-07-13T15:42:54.56315624Z Successfully built psycopg2-binary
-2026-07-13T15:42:54.609597004Z Installing collected packages: Flask-Talisman, wrapt, typing-extensions, python-dotenv, PyJWT, pygments, psycopg2-binary, packaging, ordered-set, mdurl, markupsafe, itsdangerous, greenlet, click, cachelib, blinker, bcrypt, WTForms, Werkzeug, sqlalchemy, markdown-it-py, Jinja2, gunicorn, deprecated, rich, limits, Flask, Flask-SQLAlchemy, Flask-Limiter, Flask-JWT-Extended, Flask-Caching, Flask-Bcrypt
-2026-07-13T15:42:58.309175538Z 
-2026-07-13T15:42:58.313210056Z Successfully installed Flask-3.0.3 Flask-Bcrypt-1.0.1 Flask-Caching-2.3.0 Flask-JWT-Extended-4.6.0 Flask-Limiter-3.7.0 Flask-SQLAlchemy-3.1.1 Flask-Talisman-1.1.0 Jinja2-3.1.6 PyJWT-2.13.0 WTForms-3.1.2 Werkzeug-3.1.8 bcrypt-5.0.0 blinker-1.9.0 cachelib-0.9.0 click-8.4.2 deprecated-1.3.1 greenlet-3.5.3 gunicorn-23.0.0 itsdangerous-2.2.0 limits-5.8.0 markdown-it-py-4.2.0 markupsafe-3.0.3 mdurl-0.1.2 ordered-set-4.1.0 packaging-26.2 psycopg2-binary-2.9.9 pygments-2.20.0 python-dotenv-1.0.1 rich-13.9.4 sqlalchemy-2.0.51 typing-extensions-4.16.0 wrapt-2.2.2
-2026-07-13T15:42:58.319024162Z 
-2026-07-13T15:42:58.319042932Z [notice] A new release of pip is available: 25.3 -> 26.1.2
-2026-07-13T15:42:58.319049842Z [notice] To update, run: pip install --upgrade pip
-2026-07-13T15:42:59.472398406Z ==> Uploading build...
-2026-07-13T15:43:03.841770704Z ==> Uploaded in 2.2s. Compression took 2.1s
-2026-07-13T15:43:04.124360401Z ==> Build successful 🎉
-2026-07-13T15:43:08.390063341Z ==> Deploying...
-2026-07-13T15:43:08.472209573Z ==> Setting WEB_CONCURRENCY=1 by default, based on available CPUs in the instance
-2026-07-13T15:43:18.454033947Z ==> Running 'python app.py'
-2026-07-13T15:43:33.353383529Z ==> Exited with status 1
-2026-07-13T15:43:33.357477558Z ==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys
-2026-07-13T15:43:37.717380772Z ==> Running 'python app.py'
-2026-07-13T15:43:30.88273365Z Traceback (most recent call last):
-2026-07-13T15:43:30.885230048Z   File "/opt/render/project/src/app.py", line 54, in <module>
-2026-07-13T15:43:30.885245139Z     db = SQLAlchemy(app)
-2026-07-13T15:43:30.885248969Z   File "/opt/render/project/src/.venv/lib/python3.14/site-packages/flask_sqlalchemy/extension.py", line 278, in __init__
-2026-07-13T15:43:30.885252979Z     self.init_app(app)
-2026-07-13T15:43:30.885255629Z     ~~~~~~~~~~~~~^^^^^
-2026-07-13T15:43:30.885258169Z   File "/opt/render/project/src/.venv/lib/python3.14/site-packages/flask_sqlalchemy/extension.py", line 374, in init_app
-2026-07-13T15:43:30.885261099Z     engines[key] = self._make_engine(key, options, app)
-2026-07-13T15:43:30.885263619Z                    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
-2026-07-13T15:43:30.885266209Z   File "/opt/render/project/src/.venv/lib/python3.14/site-packages/flask_sqlalchemy/extension.py", line 665, in _make_engine
-2026-07-13T15:43:30.885268699Z     return sa.engine_from_config(options, prefix="")
-2026-07-13T15:43:30.885271509Z            ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
-2026-07-13T15:43:30.88527416Z   File "/opt/render/project/src/.venv/lib/python3.14/site-packages/sqlalchemy/engine/create.py", line 844, in engine_from_config
-2026-07-13T15:43:30.88527728Z     return create_engine(url, **options)
-2026-07-13T15:43:30.88527978Z   File "<string>", line 2, in create_engine
-2026-07-13T15:43:30.88528242Z   File "/opt/render/project/src/.venv/lib/python3.14/site-packages/sqlalchemy/util/deprecations.py", line 281, in warned
-2026-07-13T15:43:30.88528507Z     return fn(*args, **kwargs)  # type: ignore[no-any-return]
-2026-07-13T15:43:30.88528756Z   File "/opt/render/project/src/.venv/lib/python3.14/site-packages/sqlalchemy/engine/create.py", line 617, in create_engine
-2026-07-13T15:43:30.8852899Z     dbapi = dbapi_meth(**dbapi_args)
-2026-07-13T15:43:30.88529286Z   File "/opt/render/project/src/.venv/lib/python3.14/site-packages/sqlalchemy/dialects/postgresql/psycopg2.py", line 697, in import_dbapi
-2026-07-13T15:43:30.88529528Z     import psycopg2
-2026-07-13T15:43:30.88529807Z   File "/opt/render/project/src/.venv/lib/python3.14/site-packages/psycopg2/__init__.py", line 51, in <module>
-2026-07-13T15:43:30.88530048Z     from psycopg2._psycopg import (                     # noqa
-2026-07-13T15:43:30.88530293Z     ...<10 lines>...
-2026-07-13T15:43:30.88530528Z     )
-2026-07-13T15:43:30.88530837Z ImportError: /opt/render/project/src/.venv/lib/python3.14/site-packages/psycopg2/_psycopg.cpython-314-x86_64-linux-gnu.so: undefined symbol: _PyInterpreterState_Get
+Flask==3.0.3
+Flask-SQLAlchemy==3.1.1
+Flask-JWT-Extended==4.6.0
+Flask-Bcrypt==1.0.1
+Flask-Limiter==3.7.0
+Flask-Caching==2.3.0
+Flask-Talisman==1.1.0
+WTForms==3.1.2
+psycopg==3.2.1
+python-dotenv==1.0.1
+gunicorn==23.0.0
