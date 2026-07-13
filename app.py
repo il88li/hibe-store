@@ -158,7 +158,7 @@ class OrderForm(Form):
     address = StringField('Address', validators=[Optional(), Length(max=500)])
     phone = StringField('Phone', validators=[
         DataRequired(), Length(min=6, max=50),
-        Regexp(r'^[\\d\\+]+$', message='Phone must contain only digits and +')
+        Regexp(r'^[\d\+]+$', message='Phone must contain only digits and +')
     ])
     notes = StringField('Notes', validators=[Optional(), Length(max=1000)])
 
@@ -357,7 +357,7 @@ def update_stock(product_id):
     in_stock = data.get('in_stock')
     if in_stock is None:
         return jsonify({'error': 'in_stock field required'}), 400
-    
+
     product.in_stock = bool(in_stock)
     db.session.commit()
     cache.clear()
