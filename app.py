@@ -5,7 +5,6 @@ from functools import wraps
 
 from flask import Flask, render_template, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from flask import Flask, render_template, request, jsonify
 from flask_jwt_extended import (
     JWTManager, create_access_token, jwt_required, get_jwt_identity
 )
@@ -14,23 +13,21 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_caching import Cache
 from flask_talisman import Talisman
-from wtforms import Form, StringField, FloatField
+from wtforms import Form, StringField, FloatField, BooleanField
 from wtforms.validators import DataRequired, Length, NumberRange, URL, Optional, Regexp
 from dotenv import load_dotenv
 
 # ═══════════════════════════════════════════════════════════
-# 1. التهيئة
+# 1. Initialization
 # ═══════════════════════════════════════════════════════════
 load_dotenv()
 
 class Config:
     SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-change-me-in-production-64chars-long!!!')
-    # استخدام DATABASE_URL من Render (تُضاف تلقائياً)
     SQLALCHEMY_DATABASE_URI = os.getenv(
         'DATABASE_URL',
         'postgresql://postgres:postgres@localhost:5432/hibe_store'
     )
-    # Connection Pooling: يتحمل 1500-3000 مستخدم متزامن
     SQLALCHEMY_ENGINE_OPTIONS = {
         'pool_size': 20,
         'max_overflow': 40,
@@ -65,7 +62,6 @@ limiter = Limiter(
 
 cache = Cache(app)
 
-# Security Headers (CSP + HSTS + X-Frame-Options...)
 Talisman(
     app,
     force_https=False,
@@ -93,7 +89,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # ═══════════════════════════════════════════════════════════
-# 2. نماذج قاعدة البيانات (ORM)
+# 2. Database Models (ORM)
 # ═══════════════════════════════════════════════════════════
 class User(db.Model):
     __tablename__ = 'users'
@@ -118,10 +114,15 @@ class Product(db.Model):
     __tablename__ = 'products'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text)
+    colors = db.Column(db.String(200))
+    material = db.Column(db.String(100))
+    country = db.Column(db.String(100))
     category_id = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=False, index=True)
     price = db.Column(db.Numeric(10, 2), nullable=False)
     icon = db.Column(db.String(100), default='bi bi-tag')
     image_url = db.Column(db.String(500))
+    in_stock = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     category = db.relationship('Category', backref='products')
 
@@ -138,14 +139,19 @@ class Order(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 # ═══════════════════════════════════════════════════════════
-# 3. التحقق من المدخلات (WTForms)
+# 3. Input Validation (WTForms)
 # ═══════════════════════════════════════════════════════════
 class ProductForm(Form):
     name = StringField('Name', validators=[DataRequired(), Length(max=200)])
     category = StringField('Category', validators=[DataRequired(), Length(max=100)])
+    description = StringField('Description', validators=[Optional(), Length(max=2000)])
+    colors = StringField('Colors', validators=[Optional(), Length(max=200)])
+    material = StringField('Material', validators=[Optional(), Length(max=100)])
+    country = StringField('Country', validators=[Optional(), Length(max=100)])
     price = FloatField('Price', validators=[DataRequired(), NumberRange(min=0.01)])
     icon = StringField('Icon', validators=[Optional(), Length(max=100)])
     image_url = StringField('Image URL', validators=[Optional(), URL(), Length(max=500)])
+    in_stock = BooleanField('In Stock', validators=[Optional()])
 
 class OrderForm(Form):
     customerName = StringField('Customer Name', validators=[DataRequired(), Length(max=200)])
@@ -160,7 +166,7 @@ class CategoryForm(Form):
     name = StringField('Name', validators=[DataRequired(), Length(max=100)])
 
 # ═══════════════════════════════════════════════════════════
-# 4. أدوات الأمان
+# 4. Security Tools
 # ═══════════════════════════════════════════════════════════
 def admin_required(fn):
     @wraps(fn)
@@ -199,7 +205,7 @@ def security_headers(response):
     return response
 
 # ═══════════════════════════════════════════════════════════
-# 5. المصادقة (JWT)
+# 5. Authentication (JWT)
 # ═══════════════════════════════════════════════════════════
 @app.route('/api/auth/login', methods=['POST'])
 @limiter.limit("10 per minute")
@@ -238,7 +244,7 @@ def register():
     return jsonify({'message': 'User created'}), 201
 
 # ═══════════════════════════════════════════════════════════
-# 6. المنتجات
+# 6. Products
 # ═══════════════════════════════════════════════════════════
 @app.route('/api/products', methods=['GET'])
 @cache.cached(timeout=60)
@@ -246,8 +252,14 @@ def get_products():
     products = Product.query.all()
     return jsonify([{
         'id': p.id, 'name': p.name,
+        'description': p.description,
+        'colors': p.colors,
+        'material': p.material,
+        'country': p.country,
         'category': p.category.name if p.category else None,
-        'price': float(p.price), 'icon': p.icon, 'image_url': p.image_url
+        'price': float(p.price), 'icon': p.icon, 'image_url': p.image_url,
+        'in_stock': p.in_stock,
+        'created_at': p.created_at.isoformat() if p.created_at else None
     } for p in products])
 
 @app.route('/api/products', methods=['POST'])
@@ -268,16 +280,27 @@ def add_product():
 
     product = Product(
         name=form.name.data, category_id=cat.id,
+        description=form.description.data,
+        colors=form.colors.data,
+        material=form.material.data,
+        country=form.country.data,
         price=form.price.data, icon=form.icon.data or 'bi bi-tag',
-        image_url=form.image_url.data
+        image_url=form.image_url.data,
+        in_stock=form.in_stock.data if form.in_stock.data is not None else True
     )
     db.session.add(product)
     db.session.commit()
     cache.clear()
     return jsonify({
         'id': product.id, 'name': product.name,
+        'description': product.description,
+        'colors': product.colors,
+        'material': product.material,
+        'country': product.country,
         'category': product.category.name, 'price': float(product.price),
-        'icon': product.icon, 'image_url': product.image_url
+        'icon': product.icon, 'image_url': product.image_url,
+        'in_stock': product.in_stock,
+        'created_at': product.created_at.isoformat() if product.created_at else None
     }), 201
 
 @app.route('/api/products/<int:product_id>', methods=['PUT'])
@@ -300,16 +323,48 @@ def update_product(product_id):
         product.category_id = cat.id
 
     product.name = form.name.data or product.name
+    product.description = form.description.data if form.description.data is not None else product.description
+    product.colors = form.colors.data if form.colors.data is not None else product.colors
+    product.material = form.material.data if form.material.data is not None else product.material
+    product.country = form.country.data if form.country.data is not None else product.country
     product.price = form.price.data if form.price.data is not None else product.price
     product.icon = form.icon.data or product.icon
     product.image_url = form.image_url.data or product.image_url
+    if form.in_stock.data is not None:
+        product.in_stock = form.in_stock.data
 
     db.session.commit()
     cache.clear()
     return jsonify({
         'id': product.id, 'name': product.name,
+        'description': product.description,
+        'colors': product.colors,
+        'material': product.material,
+        'country': product.country,
         'category': product.category.name, 'price': float(product.price),
-        'icon': product.icon, 'image_url': product.image_url
+        'icon': product.icon, 'image_url': product.image_url,
+        'in_stock': product.in_stock,
+        'created_at': product.created_at.isoformat() if product.created_at else None
+    })
+
+@app.route('/api/products/<int:product_id>/stock', methods=['PUT'])
+@jwt_required()
+@admin_required
+def update_stock(product_id):
+    """Quick stock toggle endpoint"""
+    product = Product.query.get_or_404(product_id)
+    data = request.get_json(silent=True) or {}
+    in_stock = data.get('in_stock')
+    if in_stock is None:
+        return jsonify({'error': 'in_stock field required'}), 400
+
+    product.in_stock = bool(in_stock)
+    db.session.commit()
+    cache.clear()
+    return jsonify({
+        'id': product.id,
+        'name': product.name,
+        'in_stock': product.in_stock
     })
 
 @app.route('/api/products/<int:product_id>', methods=['DELETE'])
@@ -323,7 +378,7 @@ def delete_product(product_id):
     return jsonify({'message': 'Deleted'})
 
 # ═══════════════════════════════════════════════════════════
-# 7. التصنيفات
+# 7. Categories
 # ═══════════════════════════════════════════════════════════
 @app.route('/api/categories', methods=['GET'])
 @cache.cached(timeout=120)
@@ -361,7 +416,7 @@ def delete_category(cat_name):
     return jsonify({'message': 'Deleted'})
 
 # ═══════════════════════════════════════════════════════════
-# 8. الطلبات
+# 8. Orders
 # ═══════════════════════════════════════════════════════════
 @app.route('/api/orders', methods=['GET'])
 @jwt_required()
@@ -426,7 +481,7 @@ def update_order_status(order_id):
     return jsonify({'id': order.id, 'status': order.status})
 
 # ═══════════════════════════════════════════════════════════
-# 9. صفحات الويب
+# 9. Web Pages
 # ═══════════════════════════════════════════════════════════
 @app.route('/')
 @app.route('/home.html')
@@ -438,7 +493,7 @@ def admin_page():
     return render_template('admin.html')
 
 # ═══════════════════════════════════════════════════════════
-# 10. تهيئة قاعدة البيانات
+# 10. Database Initialization
 # ═══════════════════════════════════════════════════════════
 def init_db():
     with app.app_context():
@@ -454,3 +509,4 @@ if __name__ == '__main__':
     init_db()
     logger.info('HIBE STORE server starting...')
     app.run(host='0.0.0.0', port=5000, debug=False, threaded=True)
+ 
