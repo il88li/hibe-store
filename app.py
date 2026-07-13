@@ -24,9 +24,10 @@ load_dotenv()
 
 class Config:
     SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-change-me-in-production-64chars-long!!!')
+    # Force psycopg2 driver
     SQLALCHEMY_DATABASE_URI = os.getenv(
         'DATABASE_URL',
-        'postgresql://postgres:postgres@localhost:5432/hibe_store'
+        'postgresql+psycopg2://postgres:postgres@localhost:5432/hibe_store'
     )
     SQLALCHEMY_ENGINE_OPTIONS = {
         'pool_size': 20,
@@ -158,7 +159,7 @@ class OrderForm(Form):
     address = StringField('Address', validators=[Optional(), Length(max=500)])
     phone = StringField('Phone', validators=[
         DataRequired(), Length(min=6, max=50),
-        Regexp(r'^[\d\+]+$', message='Phone must contain only digits and +')
+        Regexp(r'^[\\d\\+]+$', message='Phone must contain only digits and +')
     ])
     notes = StringField('Notes', validators=[Optional(), Length(max=1000)])
 
@@ -357,7 +358,7 @@ def update_stock(product_id):
     in_stock = data.get('in_stock')
     if in_stock is None:
         return jsonify({'error': 'in_stock field required'}), 400
-
+    
     product.in_stock = bool(in_stock)
     db.session.commit()
     cache.clear()
@@ -509,4 +510,3 @@ if __name__ == '__main__':
     init_db()
     logger.info('HIBE STORE server starting...')
     app.run(host='0.0.0.0', port=5000, debug=False, threaded=True)
- 
