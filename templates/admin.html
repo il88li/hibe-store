@@ -39,10 +39,7 @@
             flex-wrap: wrap;
             gap: 10px;
         }
-        .admin-header h1 {
-            font-size: 1.5rem;
-            color: var(--text-dark);
-        }
+        .admin-header h1 { font-size: 1.5rem; color: var(--text-dark); }
         .admin-header h1 i { color: var(--primary-blue); }
         .tabs-list {
             display: flex;
@@ -78,39 +75,165 @@
         .panel { display: none; }
         .panel.active { display: block; }
 
-        /* الجداول */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: rgba(255,255,255,0.4);
-            backdrop-filter: blur(4px);
+        /* Product cards grid - matching store style */
+        .products-admin-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            padding: 8px 0;
+        }
+        .product-admin-card {
+            background: var(--glass-white);
+            backdrop-filter: blur(8px);
             border-radius: 12px;
             overflow: hidden;
-            font-size: 0.85rem;
-            border: 1px solid var(--border-glass);
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255,255,255,0.5);
+            display: flex;
+            flex-direction: column;
+            position: relative;
         }
-        th, td {
-            padding: 8px 6px;
-            border-bottom: 1px solid rgba(0,0,0,0.06);
-            text-align: center;
-            vertical-align: middle;
+        .product-admin-img {
+            width: 100%;
+            aspect-ratio: 9 / 6;
+            background: #e8f0fe;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: var(--primary-blue);
+            overflow: hidden;
         }
-        th {
-            background: rgba(26,115,232,0.08);
-            color: var(--text-dark);
-            font-weight: 700;
+        .product-admin-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
-        .action-btn {
-            background: none;
+        .product-admin-info { padding: 12px; }
+        .product-admin-title { font-size: 1rem; font-weight: 800; color: var(--text-dark); margin-bottom: 4px; }
+        .product-admin-desc {
+            font-size: 0.75rem;
+            color: #666;
+            line-height: 1.5;
+            margin-bottom: 8px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .product-admin-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+        .meta-tag {
+            background: var(--glass-blue);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.65rem;
+            color: var(--primary-blue);
+            font-weight: 600;
+        }
+        .product-admin-price { font-weight: 800; color: var(--primary-blue); font-size: 1.1rem; margin: 8px 0; }
+        .product-admin-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .admin-action-btn {
+            flex: 1;
+            padding: 8px;
             border: none;
-            font-size: 1rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
             cursor: pointer;
-            margin: 0 4px;
-            transition: 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            font-family: inherit;
+            transition: 0.15s;
         }
-        .action-btn:active { transform: scale(0.9); }
-        .edit-btn { color: #2c7a4a; }
-        .delete-btn { color: #b14a3a; }
+        .admin-action-btn.edit {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: white;
+        }
+        .admin-action-btn.delete {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+        }
+        .admin-action-btn:hover { transform: translateY(-2px); opacity: 0.9; }
+
+        /* Stock toggle */
+        .stock-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 8px 0;
+            padding: 6px 10px;
+            background: rgba(0,0,0,0.03);
+            border-radius: 6px;
+        }
+        .stock-toggle label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+        .toggle-switch {
+            position: relative;
+            width: 44px;
+            height: 24px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc;
+            transition: .3s;
+            border-radius: 24px;
+        }
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+        input:checked + .toggle-slider { background-color: #2ecc71; }
+        input:checked + .toggle-slider:before { transform: translateX(20px); }
+        .stock-status {
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+        .stock-status.in { background: #d4edda; color: #155724; }
+        .stock-status.out { background: #f8d7da; color: #721c24; }
+
+        /* New badge */
+        .new-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a5a);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            z-index: 5;
+        }
 
         .add-btn {
             background: var(--primary-blue);
@@ -182,14 +305,8 @@
             text-align: center;
             border: 1px solid var(--border-glass);
         }
-        .region-card img {
-            max-width: 100%;
-            border-radius: 10px;
-            max-height: 150px;
-            object-fit: contain;
-        }
+        .region-card img { max-width: 100%; border-radius: 10px; max-height: 150px; object-fit: contain; }
 
-        /* مودالات */
         .modal {
             position: fixed;
             top:0; left:0; width:100%; height:100%;
@@ -209,11 +326,14 @@
             backdrop-filter: blur(20px);
             width: 90%;
             max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
             border-radius: 16px;
             padding: 20px;
             border: 1px solid var(--border-glass);
             box-shadow: var(--shadow);
         }
+        .modal-content h3 { margin-bottom: 16px; color: var(--text-dark); }
         .modal-content input, .modal-content select, .modal-content textarea {
             width: 100%;
             padding: 8px 12px;
@@ -225,21 +345,10 @@
             background: rgba(255,255,255,0.5);
             backdrop-filter: blur(4px);
         }
-        .modal-content .image-preview {
-            text-align: center;
-            margin-bottom: 12px;
-        }
-        .modal-content .image-preview img {
-            max-width: 100px;
-            max-height: 100px;
-            border-radius: 8px;
-            border: 1px solid rgba(0,0,0,0.1);
-        }
-        .modal-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 14px;
-        }
+        .modal-content textarea { resize: vertical; min-height: 80px; }
+        .modal-content .image-preview { text-align: center; margin-bottom: 12px; }
+        .modal-content .image-preview img { max-width: 100px; max-height: 100px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.1); }
+        .modal-buttons { display: flex; gap: 10px; margin-top: 14px; }
         .save-btn {
             background: var(--primary-blue);
             color: white;
@@ -264,6 +373,12 @@
         }
         .cancel-btn:active { transform: scale(0.96); }
 
+        .form-row {
+            display: flex;
+            gap: 10px;
+        }
+        .form-row > * { flex: 1; }
+
         .toast-msg {
             position: fixed;
             bottom: 20px;
@@ -281,29 +396,59 @@
             z-index: 1100;
         }
 
-        /* Dark Mode */
-        body.dark-mode {
-            background: linear-gradient(145deg, #0f172a 0%, #1e293b 100%);
+        .login-box {
+            max-width: 400px;
+            margin: 80px auto;
+            background: var(--glass-white);
+            backdrop-filter: blur(20px);
+            border-radius: 16px;
+            padding: 30px;
+            border: 1px solid var(--border-glass);
+            box-shadow: var(--shadow);
+            text-align: center;
         }
+        .login-box h2 { margin-bottom: 20px; color: var(--text-dark); }
+        .login-box input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(0,0,0,0.1);
+            font-family: inherit;
+        }
+        .login-box button {
+            width: 100%;
+            padding: 10px;
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-family: inherit;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* Dark Mode */
+        body.dark-mode { background: linear-gradient(145deg, #0f172a 0%, #1e293b 100%); }
         body.dark-mode .admin-container,
         body.dark-mode .modal-content,
         body.dark-mode .stat-card,
-        body.dark-mode .region-card {
+        body.dark-mode .region-card,
+        body.dark-mode .login-box,
+        body.dark-mode .product-admin-card {
             background: rgba(30, 41, 59, 0.8);
             border-color: rgba(255,255,255,0.1);
             color: #e2e8f0;
         }
-        body.dark-mode .admin-header h1 { color: #e2e8f0; }
+        body.dark-mode .admin-header h1,
+        body.dark-mode .login-box h2,
+        body.dark-mode .product-admin-title { color: #e2e8f0; }
+        body.dark-mode .product-admin-desc { color: #94a3b8; }
         body.dark-mode .tab-btn { color: #94a3b8; }
         body.dark-mode .tab-btn.active {
             background: rgba(96, 165, 250, 0.2);
             color: #60a5fa;
         }
-        body.dark-mode th {
-            background: rgba(96, 165, 250, 0.15);
-            color: #e2e8f0;
-        }
-        body.dark-mode table { background: rgba(30, 41, 59, 0.4); }
         body.dark-mode .small-cat-btn {
             background: rgba(96, 165, 250, 0.15);
             color: #e2e8f0;
@@ -311,18 +456,34 @@
         body.dark-mode .stat-number { color: #60a5fa; }
         body.dark-mode .modal-content input,
         body.dark-mode .modal-content select,
-        body.dark-mode .modal-content textarea {
+        body.dark-mode .modal-content textarea,
+        body.dark-mode .login-box input {
             background: rgba(255,255,255,0.08);
             color: #e2e8f0;
             border-color: rgba(255,255,255,0.1);
         }
+        body.dark-mode .stock-toggle { background: rgba(255,255,255,0.05); }
+        body.dark-mode .stock-toggle label { color: #e2e8f0; }
     </style>
 </head>
 <body>
+<div id="loginScreen">
+    <div class="login-box">
+        <h2><i class="bi bi-shield-lock"></i> تسجيل الدخول</h2>
+        <input type="text" id="loginUser" placeholder="اسم المستخدم">
+        <input type="password" id="loginPass" placeholder="كلمة المرور">
+        <button id="loginBtn">دخول</button>
+    </div>
+</div>
+
+<div id="adminScreen" style="display:none;">
 <div class="admin-container">
     <header class="admin-header">
         <h1><i class="bi bi-grid"></i> لوحة الإدارة</h1>
-        <button id="darkModeAdmin" class="add-btn" style="background:#475569;"><i class="bi bi-moon"></i> ليلي</button>
+        <div style="display:flex; gap:8px;">
+            <button id="darkModeAdmin" class="add-btn" style="background:#475569;"><i class="bi bi-moon"></i> ليلي</button>
+            <button id="logoutBtn" class="add-btn" style="background:#b14a3a;"><i class="bi bi-box-arrow-right"></i> خروج</button>
+        </div>
     </header>
 
     <nav>
@@ -335,18 +496,11 @@
         </ul>
     </nav>
 
-    <!-- المنتجات -->
     <section id="productsPanel" class="panel active">
         <button id="addProductBtn" class="add-btn"><i class="bi bi-plus-lg"></i> إضافة منتج</button>
-        <div style="overflow-x:auto;">
-            <table id="productsTable">
-                <thead><tr><th>#</th><th>المنتج</th><th>التصنيف</th><th>السعر</th><th>الصورة</th><th>إجراءات</th></tr></thead>
-                <tbody id="productsTbody"></tbody>
-            </table>
-        </div>
+        <div class="products-admin-grid" id="productsAdminGrid"></div>
     </section>
 
-    <!-- التصنيفات -->
     <section id="categoriesPanel" class="panel">
         <button id="addCategoryBtn" class="add-btn"><i class="bi bi-plus-lg"></i> إضافة تصنيف</button>
         <div class="categories-bar" id="categoriesBar"></div>
@@ -358,7 +512,6 @@
         </div>
     </section>
 
-    <!-- الطلبات -->
     <section id="ordersPanel" class="panel">
         <div style="overflow-x:auto;">
             <table id="ordersTable">
@@ -368,12 +521,10 @@
         </div>
     </section>
 
-    <!-- الإحصائيات -->
     <section id="statsPanel" class="panel">
         <div class="stats-grid" id="statsContainer"></div>
     </section>
 
-    <!-- مناطق النقل -->
     <section id="regionsPanel" class="panel">
         <div class="region-card">
             <img id="regionImagePreview" src="https://img.sanishtech.com/u/130d1b77889fb2e2f250198b86ae6a96.png" alt="منطقة النقل">
@@ -382,18 +533,35 @@
         </div>
     </section>
 </div>
+</div>
 
 <div id="toastMsg" class="toast-msg"></div>
 
-<!-- مودال المنتج -->
+<!-- Product Modal -->
 <div id="productModal" class="modal">
     <div class="modal-content">
         <h3 id="productModalTitle">إضافة منتج</h3>
         <input type="text" id="prodName" placeholder="اسم المنتج *">
         <select id="prodCategory"></select>
-        <input type="number" id="prodPrice" placeholder="السعر *">
+        <textarea id="prodDesc" placeholder="وصف المنتج"></textarea>
+        <div class="form-row">
+            <input type="text" id="prodColors" placeholder="الألوان (مثال: أحمر، أزرق، أسود)">
+            <input type="text" id="prodMaterial" placeholder="الخامة (مثال: قطن، كتان)">
+        </div>
+        <div class="form-row">
+            <input type="text" id="prodCountry" placeholder="بلد الصنع">
+            <input type="number" id="prodPrice" placeholder="السعر *">
+        </div>
         <input type="text" id="prodIcon" placeholder="أيقونة" value="bi bi-tag">
         <input type="url" id="prodImageUrl" placeholder="رابط الصورة *">
+        <div class="stock-toggle">
+            <label>حالة التوفر:</label>
+            <label class="toggle-switch">
+                <input type="checkbox" id="prodInStock" checked>
+                <span class="toggle-slider"></span>
+            </label>
+            <span id="stockLabel" class="stock-status in">متوفر</span>
+        </div>
         <div class="image-preview" id="imagePreviewDiv" style="display:none;">
             <img id="imagePreview" src="">
         </div>
@@ -404,7 +572,7 @@
     </div>
 </div>
 
-<!-- مودال التصنيف -->
+<!-- Category Modal -->
 <div id="categoryModal" class="modal">
     <div class="modal-content">
         <h3>إضافة تصنيف</h3>
@@ -416,7 +584,7 @@
     </div>
 </div>
 
-<!-- مودال منطقة النقل -->
+<!-- Region Modal -->
 <div id="regionModal" class="modal">
     <div class="modal-content">
         <h3>تعديل منطقة النقل</h3>
@@ -430,59 +598,157 @@
 </div>
 
 <script>
-    // ----------------------- دوال مساعدة -----------------------
     let editingProductId = null;
+    let authToken = localStorage.getItem('hibe_admin_token') || '';
+    const NEW_DAYS = 7;
+
     function showToast(msg) {
         const t = document.getElementById("toastMsg");
         t.innerText = msg;
         t.style.opacity = "1";
         setTimeout(() => t.style.opacity = "0", 2000);
     }
+
+    function isNewProduct(createdAt) {
+        if (!createdAt) return false;
+        const created = new Date(createdAt);
+        const now = new Date();
+        const diffDays = (now - created) / (1000 * 60 * 60 * 24);
+        return diffDays <= NEW_DAYS;
+    }
+
     async function fetchAPI(url, options = {}) {
-        const res = await fetch(url, options);
-        if (!res.ok) throw new Error(await res.text());
+        const opts = {
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+                ...(options.headers || {})
+            }
+        };
+        const res = await fetch(url, opts);
+        if (res.status === 401 || res.status === 403) {
+            localStorage.removeItem('hibe_admin_token');
+            showToast("انتهت الجلسة - أعد تسجيل الدخول");
+            setTimeout(() => location.reload(), 1500);
+            throw new Error('Unauthorized');
+        }
+        if (!res.ok) {
+            const text = await res.text();
+            throw new Error(text);
+        }
         return res.json();
     }
 
-    // ----------------------- المنتجات -----------------------
+    // ─── Login ───
+    document.getElementById("loginBtn").addEventListener("click", async () => {
+        const user = document.getElementById("loginUser").value.trim();
+        const pass = document.getElementById("loginPass").value;
+        try {
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: user, password: pass })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error);
+            if (!data.is_admin) throw new Error('Access denied');
+            authToken = data.access_token;
+            localStorage.setItem('hibe_admin_token', authToken);
+            document.getElementById("loginScreen").style.display = "none";
+            document.getElementById("adminScreen").style.display = "block";
+            setActiveTab("products");
+        } catch(e) {
+            showToast(e.message || "فشل تسجيل الدخول");
+        }
+    });
+
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+        localStorage.removeItem('hibe_admin_token');
+        location.reload();
+    });
+
+    // ─── Products (Card View) ───
     async function loadProducts() {
         try {
             const products = await fetchAPI('/api/products');
             renderProducts(products);
         } catch(e) { showToast("خطأ في تحميل المنتجات"); }
     }
+
     function renderProducts(products) {
-        const tbody = document.getElementById("productsTbody");
-        tbody.innerHTML = "";
-        products.forEach((p, i) => {
-            const row = tbody.insertRow();
-            row.insertCell(0).innerText = i+1;
-            row.insertCell(1).innerText = p.name;
-            row.insertCell(2).innerText = p.category;
-            row.insertCell(3).innerText = p.price;
-            const imgCell = row.insertCell(4);
-            if (p.image_url) {
-                const img = document.createElement("img");
-                img.src = p.image_url;
-                img.style.width = "36px";
-                img.style.height = "36px";
-                img.style.objectFit = "cover";
-                img.style.borderRadius = "6px";
-                imgCell.appendChild(img);
-            } else imgCell.innerText = "لا يوجد";
-            const actions = row.insertCell(5);
-            const editBtn = document.createElement("button");
-            editBtn.innerHTML = '<i class="bi bi-pencil"></i>';
-            editBtn.className = "action-btn edit-btn";
-            editBtn.onclick = () => openProductModal(p);
-            const delBtn = document.createElement("button");
-            delBtn.innerHTML = '<i class="bi bi-trash3"></i>';
-            delBtn.className = "action-btn delete-btn";
-            delBtn.onclick = () => deleteProduct(p.id);
-            actions.appendChild(editBtn);
-            actions.appendChild(delBtn);
+        const grid = document.getElementById("productsAdminGrid");
+        grid.innerHTML = "";
+
+        if (products.length === 0) {
+            grid.innerHTML = `<div style="text-align:center;padding:40px;color:#888;"><i class="bi bi-box" style="font-size:3rem;"></i><p>لا توجد منتجات</p></div>`;
+            return;
+        }
+
+        products.forEach(p => {
+            const isNew = isNewProduct(p.created_at);
+            const stockBadge = p.in_stock 
+                ? '<span class="stock-status in">✓ متوفر</span>' 
+                : '<span class="stock-status out">✗ غير متوفر</span>';
+
+            const card = document.createElement('div');
+            card.className = 'product-admin-card';
+            card.innerHTML = `
+                ${isNew ? '<span class="new-badge">جديد</span>' : ''}
+                <div class="product-admin-img">
+                    ${p.image_url ? `<img src="${p.image_url}" alt="${p.name}">` : `<i class="${p.icon || 'bi bi-tag'}"></i>`}
+                </div>
+                <div class="product-admin-info">
+                    <div class="product-admin-title">${p.name}</div>
+                    <div class="product-admin-desc">${p.description || 'لا يوجد وصف'}</div>
+                    <div class="product-admin-meta">
+                        ${p.colors ? `<span class="meta-tag"><i class="bi bi-palette"></i> ${p.colors}</span>` : ''}
+                        ${p.material ? `<span class="meta-tag"><i class="bi bi-layers"></i> ${p.material}</span>` : ''}
+                        ${p.country ? `<span class="meta-tag"><i class="bi bi-geo-alt"></i> ${p.country}</span>` : ''}
+                        <span class="meta-tag"><i class="bi bi-folder"></i> ${p.category || 'غير محدد'}</span>
+                    </div>
+                    <div class="product-admin-price">${p.price} ر.ي</div>
+                    <div class="stock-toggle">
+                        <label>التوفر:</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" class="stock-checkbox" data-id="${p.id}" ${p.in_stock ? 'checked' : ''}>
+                            <span class="toggle-slider"></span>
+                        </label>
+                        ${stockBadge}
+                    </div>
+                    <div class="product-admin-actions">
+                        <button class="admin-action-btn edit" onclick="openProductModal(products.find(pr => pr.id === ${p.id}))">
+                            <i class="bi bi-pencil"></i> تعديل
+                        </button>
+                        <button class="admin-action-btn delete" onclick="deleteProduct(${p.id})">
+                            <i class="bi bi-trash3"></i> حذف
+                        </button>
+                    </div>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+
+        // Add stock toggle listeners
+        document.querySelectorAll('.stock-checkbox').forEach(cb => {
+            cb.addEventListener('change', async (e) => {
+                const id = parseInt(e.target.dataset.id);
+                const inStock = e.target.checked;
+                try {
+                    await fetchAPI(`/api/products/${id}/stock`, {
+                        method: 'PUT',
+                        body: JSON.stringify({ in_stock: inStock })
+                    });
+                    showToast(inStock ? "✓ تم التفعيل" : "✗ تم التعطيل");
+                    loadProducts();
+                } catch(err) {
+                    showToast("فشل تحديث الحالة");
+                    e.target.checked = !inStock;
+                }
+            });
         });
     }
+
     async function deleteProduct(id) {
         if (!confirm("حذف المنتج؟")) return;
         try {
@@ -491,6 +757,7 @@
             loadProducts();
         } catch(e) { showToast("فشل الحذف"); }
     }
+
     async function openProductModal(product = null) {
         editingProductId = product?.id || null;
         document.getElementById("productModalTitle").innerText = product ? "تعديل منتج" : "إضافة منتج";
@@ -498,12 +765,20 @@
             const cats = await fetchAPI('/api/categories');
             const select = document.getElementById("prodCategory");
             select.innerHTML = '<option value="">اختر التصنيف</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
+
             if (product) {
-                document.getElementById("prodName").value = product.name;
-                document.getElementById("prodCategory").value = product.category;
-                document.getElementById("prodPrice").value = product.price;
+                document.getElementById("prodName").value = product.name || "";
+                document.getElementById("prodCategory").value = product.category || "";
+                document.getElementById("prodDesc").value = product.description || "";
+                document.getElementById("prodColors").value = product.colors || "";
+                document.getElementById("prodMaterial").value = product.material || "";
+                document.getElementById("prodCountry").value = product.country || "";
+                document.getElementById("prodPrice").value = product.price || "";
                 document.getElementById("prodIcon").value = product.icon || "bi bi-tag";
                 document.getElementById("prodImageUrl").value = product.image_url || "";
+                document.getElementById("prodInStock").checked = product.in_stock !== false;
+                document.getElementById("stockLabel").innerText = product.in_stock !== false ? "متوفر" : "غير متوفر";
+                document.getElementById("stockLabel").className = product.in_stock !== false ? "stock-status in" : "stock-status out";
                 if (product.image_url) {
                     document.getElementById("imagePreview").src = product.image_url;
                     document.getElementById("imagePreviewDiv").style.display = "block";
@@ -511,57 +786,76 @@
             } else {
                 document.getElementById("prodName").value = "";
                 document.getElementById("prodCategory").value = "";
+                document.getElementById("prodDesc").value = "";
+                document.getElementById("prodColors").value = "";
+                document.getElementById("prodMaterial").value = "";
+                document.getElementById("prodCountry").value = "";
                 document.getElementById("prodPrice").value = "";
                 document.getElementById("prodIcon").value = "bi bi-tag";
                 document.getElementById("prodImageUrl").value = "";
+                document.getElementById("prodInStock").checked = true;
+                document.getElementById("stockLabel").innerText = "متوفر";
+                document.getElementById("stockLabel").className = "stock-status in";
                 document.getElementById("imagePreviewDiv").style.display = "none";
             }
             document.getElementById("productModal").classList.add("show");
         } catch(e) { showToast("خطأ في تحميل التصنيفات"); }
     }
+
     async function saveProduct() {
         const name = document.getElementById("prodName").value.trim();
         const category = document.getElementById("prodCategory").value;
+        const description = document.getElementById("prodDesc").value.trim();
+        const colors = document.getElementById("prodColors").value.trim();
+        const material = document.getElementById("prodMaterial").value.trim();
+        const country = document.getElementById("prodCountry").value.trim();
         const price = parseFloat(document.getElementById("prodPrice").value);
         const icon = document.getElementById("prodIcon").value.trim();
         const image_url = document.getElementById("prodImageUrl").value.trim();
+        const in_stock = document.getElementById("prodInStock").checked;
+
         if (!name || !category || isNaN(price) || price <= 0) {
             showToast("املأ الاسم والتصنيف والسعر");
             return;
         }
         if (!image_url) { showToast("رابط الصورة إجباري"); return; }
-        const data = { name, category, price, icon, image_url };
+
+        const data = { name, category, description, colors, material, country, price, icon, image_url, in_stock };
         try {
             if (editingProductId) {
-                await fetchAPI(`/api/products/${editingProductId}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
+                await fetchAPI(`/api/products/${editingProductId}`, { method: 'PUT', body: JSON.stringify(data) });
                 showToast("تم التعديل");
             } else {
-                await fetchAPI('/api/products', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
+                await fetchAPI('/api/products', { method: 'POST', body: JSON.stringify(data) });
                 showToast("تمت الإضافة");
             }
             document.getElementById("productModal").classList.remove("show");
             loadProducts();
         } catch(e) { showToast("فشل الحفظ: " + e.message); }
     }
+
     document.getElementById("prodImageUrl").addEventListener("input", function() {
         const url = this.value;
         const preview = document.getElementById("imagePreview");
         const div = document.getElementById("imagePreviewDiv");
-        if (url && (url.startsWith("http") || url.startsWith("https"))) {
+        if (url && url.startsWith("http")) {
             preview.src = url;
             div.style.display = "block";
         } else div.style.display = "none";
     });
 
-    // ----------------------- التصنيفات -----------------------
+    document.getElementById("prodInStock").addEventListener("change", function() {
+        const label = document.getElementById("stockLabel");
+        if (this.checked) {
+            label.innerText = "متوفر";
+            label.className = "stock-status in";
+        } else {
+            label.innerText = "غير متوفر";
+            label.className = "stock-status out";
+        }
+    });
+
+    // ─── Categories ───
     async function loadCategories() {
         try {
             const cats = await fetchAPI('/api/categories');
@@ -604,18 +898,14 @@
         const name = document.getElementById("newCategoryName").value.trim();
         if (!name) { showToast("أدخل اسم التصنيف"); return; }
         try {
-            await fetchAPI('/api/categories', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name })
-            });
+            await fetchAPI('/api/categories', { method: 'POST', body: JSON.stringify({ name }) });
             showToast("تمت الإضافة");
             document.getElementById("categoryModal").classList.remove("show");
             loadCategories();
         } catch(e) { showToast("فشل الإضافة"); }
     }
 
-    // ----------------------- الطلبات -----------------------
+    // ─── Orders ───
     async function loadOrders() {
         try {
             const orders = await fetchAPI('/api/orders');
@@ -635,10 +925,10 @@
             const statusCell = row.insertCell(5);
             const select = document.createElement("select");
             select.className = "status-select";
+            select.style.cssText = "padding:4px;border-radius:6px;border:1px solid rgba(0,0,0,0.1);";
             ["قيد التسليم", "تم التسليم", "ملغي", "نفاذ الكمية"].forEach(s => {
                 const opt = document.createElement("option");
-                opt.value = s;
-                opt.innerText = s;
+                opt.value = s; opt.innerText = s;
                 if (o.status === s) opt.selected = true;
                 select.appendChild(opt);
             });
@@ -646,7 +936,6 @@
                 try {
                     await fetchAPI(`/api/orders/${o.id}`, {
                         method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ status: select.value })
                     });
                     showToast("تم تحديث الحالة");
@@ -660,7 +949,7 @@
         });
     }
 
-    // ----------------------- الإحصائيات -----------------------
+    // ─── Stats ───
     async function loadStats() {
         try {
             const [products, orders] = await Promise.all([
@@ -682,7 +971,7 @@
         } catch(e) { showToast("خطأ في الإحصائيات"); }
     }
 
-    // ----------------------- مناطق النقل -----------------------
+    // ─── Regions ───
     let regionSettings = { image: "https://img.sanishtech.com/u/130d1b77889fb2e2f250198b86ae6a96.png", text: "التوصيل متاح في صنعاء فقط" };
     function loadRegionSettings() {
         const stored = localStorage.getItem("hibe_region");
@@ -709,7 +998,7 @@
         showToast("تم التحديث");
     }
 
-    // ----------------------- التنقل بين التبويبات -----------------------
+    // ─── Navigation ───
     function setActiveTab(tab) {
         document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
         document.getElementById(`${tab}Panel`).classList.add("active");
@@ -721,7 +1010,7 @@
         else if (tab === 'regions') loadRegionSettings();
     }
 
-    // ----------------------- الوضع الليلي -----------------------
+    // ─── Dark Mode ───
     function setupDarkMode() {
         const isDark = localStorage.getItem("admin_dark") === "true";
         if (isDark) document.body.classList.add("dark-mode");
@@ -731,7 +1020,7 @@
         });
     }
 
-    // ----------------------- أحداث الأزرار -----------------------
+    // ─── Events ───
     document.getElementById("addProductBtn").addEventListener("click", () => openProductModal());
     document.getElementById("saveProductBtn").addEventListener("click", saveProduct);
     document.getElementById("cancelProductBtn").addEventListener("click", () => document.getElementById("productModal").classList.remove("show"));
@@ -743,9 +1032,13 @@
     document.getElementById("cancelRegionBtn").addEventListener("click", () => document.getElementById("regionModal").classList.remove("show"));
     document.querySelectorAll(".tab-btn").forEach(btn => btn.addEventListener("click", () => setActiveTab(btn.dataset.tab)));
 
-    // ----------------------- بدء التشغيل -----------------------
+    // ─── Init ───
     setupDarkMode();
-    setActiveTab("products");
+    if (authToken) {
+        document.getElementById("loginScreen").style.display = "none";
+        document.getElementById("adminScreen").style.display = "block";
+        setActiveTab("products");
+    }
 </script>
 </body>
 </html>
