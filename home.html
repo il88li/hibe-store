@@ -1020,36 +1020,23 @@
         var details = "";
         if (pendingOrderData && pendingOrderData.type === "single") {
             var p = pendingOrderData.product;
-            details = "المنتج: " + p.name + "
-السعر: " + p.price + " ر.ي
-الكمية: " + p.qty + "
-اللون: " + color + "
-الإجمالي: " + (p.price * p.qty) + " ر.ي";
+            details = "المنتج: " + p.name + "\nالسعر: " + p.price + " ر.ي\nالكمية: " + p.qty + "\nاللون: " + color + "\nالإجمالي: " + (p.price * p.qty) + " ر.ي";
         } else if (pendingOrderData && pendingOrderData.type === "cart") {
             for (var i = 0; i < pendingOrderData.items.length; i++) {
                 var it = pendingOrderData.items[i];
-                details += it.name + " (" + it.qty + "×" + it.price + "=" + (it.price * it.qty) + " ر.ي)
-";
+                details += it.name + " (" + it.qty + "×" + it.price + "=" + (it.price * it.qty) + " ر.ي)\n";
             }
             details += "الإجمالي الكلي: " + pendingOrderData.total + " ر.ي";
         }
 
-        var msg = "🌿 طلب جديد من HIBE STORE 🌿
-" +
-            "👤 الاسم: " + name + "
-" +
-            "📍 المنطقة: " + location + "
-" +
-            "🏠 العنوان التفصيلي: " + address + "
-" +
-            "📞 الجوال: " + phone + "
-" +
-            "🎨 اللون: " + color + "
-" +
-            "📝 ملاحظات: " + notes + "
-" +
-            "📌 تفاصيل الطلب:
-" + details;
+        var msg = "🌿 طلب جديد من HIBE STORE 🌿\n" +
+            "👤 الاسم: " + name + "\n" +
+            "📍 المنطقة: " + location + "\n" +
+            "🏠 العنوان التفصيلي: " + address + "\n" +
+            "📞 الجوال: " + phone + "\n" +
+            "🎨 اللون: " + color + "\n" +
+            "📝 ملاحظات: " + notes + "\n" +
+            "📌 تفاصيل الطلب:\n" + details;
 
         window.open("https://wa.me/734607101?text=" + encodeURIComponent(msg), "_blank");
 
