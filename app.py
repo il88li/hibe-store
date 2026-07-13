@@ -1,312 +1,559 @@
-# app.py - خادم Flask مع PostgreSQL لتخزين المنتجات والتصنيفات والطلبات
-import json
 import os
-from datetime import datetime
-from flask import Flask, render_template_string, request, jsonify
-from flask_cors import CORS
-import psycopg2
-from psycopg2.extras import RealDictCursor
-from psycopg2 import sql
+import logging
+from datetime import datetime, timedelta
+from functools import wraps
 
-app = Flask(__name__, static_folder='.', static_url_path='')
-CORS(app)
+from flask import Flask, render_template, request, jsonify
+from flask_sqlalchemy import SQLAlchemy
+from flask_jwt_extended import (
+    JWTManager, create_access_token, jwt_required, get_jwt_identity
+)
+from flask_bcrypt import Bcrypt
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from flask_caching import Cache
+from flask_talisman import Talisman
+from flask_wtf.csrf import CSRFProtect, generate_csrf
+from wtforms import Form, StringField, FloatField
+from wtforms.validators import DataRequired, Length, NumberRange, URL, Optional
+from dotenv import load_dotenv
 
-# ------------------ اتصال قاعدة البيانات ------------------
-DATABASE_URL = "postgresql://hibe_store_user:mMocyX638yt9YuRvHKml3bvh6YEjp07O@dpg-d8o43g8g4nts73cajcbg-a.oregon-postgres.render.com/hibe_store"
+# ─────────────────────────────────────────────────────────────
+# 1. التهيئة والإعدادات
+# ─────────────────────────────────────────────────────────────
+load_dotenv()
 
-def get_db_connection():
-    return psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
-
-def init_db():
-    """إنشاء الجداول إذا لم تكن موجودة"""
-    conn = get_db_connection()
-    cur = conn.cursor()
-    # جدول المنتجات
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS products (
-            id SERIAL PRIMARY KEY,
-            name TEXT NOT NULL,
-            category TEXT NOT NULL,
-            price NUMERIC(10,2) NOT NULL,
-            icon TEXT NOT NULL,
-            image_url TEXT
-        )
-    """)
-    # جدول التصنيفات (حفظ كقائمة بسيطة من النصوص)
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS categories (
-            name TEXT PRIMARY KEY
-        )
-    """)
-    # جدول الطلبات
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS orders (
-            id SERIAL PRIMARY KEY,
-            customer_name TEXT NOT NULL,
-            address TEXT,
-            phone TEXT,
-            notes TEXT,
-            items JSONB NOT NULL,
-            total NUMERIC(10,2),
-            status TEXT DEFAULT 'قيد التسليم',
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
-    # إدخال التصنيفات الافتراضية إذا كان الجدول فارغاً
-    cur.execute("SELECT COUNT(*) FROM categories")
-    count = cur.fetchone()['count']
-    if count == 0:
-        default_cats = ["رجالي", "نسائي", "ولادي", "بناتي", "جزم", "شنط", "جواكت", "ملابس صيفية"]
-        for cat in default_cats:
-            cur.execute("INSERT INTO categories (name) VALUES (%s) ON CONFLICT DO NOTHING", (cat,))
-    conn.commit()
-    cur.close()
-    conn.close()
-
-# استدعاء دالة التهيئة عند بدء التشغيل
-init_db()
-
-# ------------------ دوال مساعدة للتعامل مع قاعدة البيانات ------------------
-def get_all_products():
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM products ORDER BY id")
-    products = cur.fetchall()
-    cur.close()
-    conn.close()
-    return products
-
-def get_product_by_id(product_id):
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM products WHERE id = %s", (product_id,))
-    product = cur.fetchone()
-    cur.close()
-    conn.close()
-    return product
-
-def add_product_to_db(name, category, price, icon, image_url):
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute(
-        "INSERT INTO products (name, category, price, icon, image_url) VALUES (%s, %s, %s, %s, %s) RETURNING *",
-        (name, category, price, icon, image_url)
+class Config:
+    SECRET_KEY = os.getenv('SECRET_KEY', 'change-me-in-production-32chars-long')
+    SQLALCHEMY_DATABASE_URI = os.getenv(
+        'DATABASE_URL',
+        'postgresql://postgres:postgres@localhost:5432/hibe_store'
     )
-    new_product = cur.fetchone()
-    conn.commit()
-    cur.close()
-    conn.close()
-    return new_product
+    # تكوين Connection Pooling لتحمل 1500-3000 مستخدم متزامن
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'pool_size': 20,              # اتصالات دائمة
+        'max_overflow': 40,           # اتصالات إضافية عند الضغط
+        'pool_timeout': 30,           # ثواني انتظار الاتصال
+        'pool_recycle': 1800,         # إعادة تدوير الاتصال كل 30 دقيقة
+        'pool_pre_ping': True         # التحقق من صحة الاتصال قبل الاستخدام
+    }
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-def update_product_in_db(product_id, name, category, price, icon, image_url):
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute(
-        "UPDATE products SET name=%s, category=%s, price=%s, icon=%s, image_url=%s WHERE id=%s RETURNING *",
-        (name, category, price, icon, image_url, product_id)
-    )
-    updated = cur.fetchone()
-    conn.commit()
-    cur.close()
-    conn.close()
-    return updated
+    JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'jwt-secret-change-me')
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=1)
+    JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
 
-def delete_product_from_db(product_id):
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute("DELETE FROM products WHERE id = %s", (product_id,))
-    conn.commit()
-    cur.close()
-    conn.close()
+    CACHE_TYPE = 'SimpleCache'        # قابل للترقية إلى Redis
+    CACHE_DEFAULT_TIMEOUT = 300
+    BCRYPT_LOG_ROUNDS = 12
+    WTF_CSRF_ENABLED = True
+    WTF_CSRF_TIME_LIMIT = 3600
 
-# ------------------ التصنيفات ------------------
-def get_all_categories():
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute("SELECT name FROM categories ORDER BY name")
-    rows = cur.fetchall()
-    cur.close()
-    conn.close()
-    return [row['name'] for row in rows]
+app = Flask(__name__, template_folder='templates', static_folder='static', static_url_path='/static')
+app.config.from_object(Config)
 
-def add_category_to_db(name):
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute("INSERT INTO categories (name) VALUES (%s) ON CONFLICT DO NOTHING", (name,))
-    conn.commit()
-    cur.close()
-    conn.close()
+# ─────────────────────────────────────────────────────────────
+# 2. الإضافات (Extensions)
+# ─────────────────────────────────────────────────────────────
+db = SQLAlchemy(app)
+bcrypt = Bcrypt(app)
+jwt = JWTManager(app)
+csrf = CSRFProtect(app)
 
-def delete_category_from_db(name):
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute("DELETE FROM categories WHERE name = %s", (name,))
-    conn.commit()
-    cur.close()
-    conn.close()
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address,
+    default_limits=["200 per day", "50 per hour"],
+    storage_uri="memory://"  # قابل للترقية إلى Redis
+)
 
-# ------------------ الطلبات ------------------
-def get_all_orders():
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM orders ORDER BY id DESC")
-    orders = cur.fetchall()
-    cur.close()
-    conn.close()
-    return orders
+cache = Cache(app)
 
-def add_order_to_db(customer_name, address, phone, notes, items, total):
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute(
-        "INSERT INTO orders (customer_name, address, phone, notes, items, total, status, created_at) VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING *",
-        (customer_name, address, phone, notes, json.dumps(items), total, 'قيد التسليم', datetime.now())
-    )
-    new_order = cur.fetchone()
-    conn.commit()
-    cur.close()
-    conn.close()
-    return new_order
+# Security Headers إجبارية
+Talisman(
+    app,
+    force_https=False,  # اجعلها True في الإنتاج
+    content_security_policy={
+        'default-src': "'self'",
+        'script-src': ["'self'", "'unsafe-inline'", "'unsafe-eval'",
+                       "https://cdn.jsdelivr.net", "https://fonts.googleapis.com"],
+        'style-src': ["'self'", "'unsafe-inline'",
+                      "https://cdn.jsdelivr.net", "https://fonts.googleapis.com"],
+        'img-src': ["'self'", "data:", "https://images.unsplash.com",
+                    "https://img.sanishtech.com"],
+        'font-src': ["'self'", "https://fonts.gstatic.com", "https://cdn.jsdelivr.net"],
+        'connect-src': "'self'"
+    }
+)
 
-def update_order_status(order_id, status):
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute("UPDATE orders SET status = %s WHERE id = %s RETURNING *", (status, order_id))
-    updated = cur.fetchone()
-    conn.commit()
-    cur.close()
-    conn.close()
-    return updated
+# ─────────────────────────────────────────────────────────────
+# 3. نظام التسجيل (Logging)
+# ─────────────────────────────────────────────────────────────
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(name)s: %(message)s',
+    handlers=[
+        logging.FileHandler('app.log', encoding='utf-8'),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
 
-# ------------------ واجهات API ------------------
+# ─────────────────────────────────────────────────────────────
+# 4. نماذج قاعدة البيانات (ORM)
+# ─────────────────────────────────────────────────────────────
+class User(db.Model):
+    __tablename__ = 'users'
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False, index=True)
+    password_hash = db.Column(db.String(255), nullable=False)
+    is_admin = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def set_password(self, password: str):
+        self.password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
+
+    def check_password(self, password: str) -> bool:
+        return bcrypt.check_password_hash(self.password_hash, password)
+
+
+class Category(db.Model):
+    __tablename__ = 'categories'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), unique=True, nullable=False, index=True)
+
+
+class Product(db.Model):
+    __tablename__ = 'products'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(200), nullable=False)
+    category_id = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=False, index=True)
+    price = db.Column(db.Numeric(10, 2), nullable=False)
+    icon = db.Column(db.String(100), default='bi bi-tag')
+    image_url = db.Column(db.String(500))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    category = db.relationship('Category', backref='products')
+
+
+class Order(db.Model):
+    __tablename__ = 'orders'
+    id = db.Column(db.Integer, primary_key=True)
+    customer_name = db.Column(db.String(200), nullable=False)
+    address = db.Column(db.String(500))
+    phone = db.Column(db.String(50), nullable=False)
+    notes = db.Column(db.Text)
+    items = db.Column(db.JSON, nullable=False)
+    total = db.Column(db.Numeric(10, 2))
+    status = db.Column(db.String(50), default='قيد التسليم')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+# ─────────────────────────────────────────────────────────────
+# 5. التحقق من المدخلات (Forms Validation)
+# ─────────────────────────────────────────────────────────────
+class ProductForm(Form):
+    name = StringField('Name', validators=[DataRequired(), Length(max=200)])
+    category = StringField('Category', validators=[DataRequired(), Length(max=100)])
+    price = FloatField('Price', validators=[DataRequired(), NumberRange(min=0.01)])
+    icon = StringField('Icon', validators=[Optional(), Length(max=100)])
+    image_url = StringField('Image URL', validators=[Optional(), URL(), Length(max=500)])
+
+
+class OrderForm(Form):
+    customerName = StringField('Customer Name', validators=[DataRequired(), Length(max=200)])
+    address = StringField('Address', validators=[Optional(), Length(max=500)])
+    phone = StringField('Phone', validators=[DataRequired(), Length(min=6, max=50)])
+    notes = StringField('Notes', validators=[Optional(), Length(max=1000)])
+
+
+class CategoryForm(Form):
+    name = StringField('Name', validators=[DataRequired(), Length(max=100)])
+
+# ─────────────────────────────────────────────────────────────
+# 6. أدوات الأمان المساعدة
+# ─────────────────────────────────────────────────────────────
+def admin_required(fn):
+    """مصادقة JWT + صلاحية الأدمن"""
+    @wraps(fn)
+    @jwt_required()
+    def wrapper(*args, **kwargs):
+        current_user = get_jwt_identity()
+        user = User.query.filter_by(username=current_user).first()
+        if not user or not user.is_admin:
+            logger.warning(f'Admin access denied for user: {current_user}')
+            return jsonify({'error': 'Admin access required'}), 403
+        return fn(*args, **kwargs)
+    return wrapper
+
+
+@app.errorhandler(404)
+def not_found(error):
+    logger.warning(f'404 at {request.url}')
+    return jsonify({'error': 'Resource not found'}), 404
+
+
+@app.errorhandler(500)
+def internal_error(error):
+    db.session.rollback()
+    logger.error(f'500 error: {str(error)}', exc_info=True)
+    return jsonify({'error': 'Internal server error'}), 500
+
+
+@app.errorhandler(429)
+def ratelimit_handler(e):
+    logger.warning(f'Rate limit exceeded from {request.remote_addr}')
+    return jsonify({'error': 'Rate limit exceeded', 'retry_after': e.description}), 429
+
+
+@app.after_request
+def security_headers(response):
+    """إضافة رؤوس الأمان الإضافية"""
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'DENY'
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+    response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+    response.headers['Permissions-Policy'] = 'geolocation=(), microphone=(), camera=()'
+    return response
+
+# ─────────────────────────────────────────────────────────────
+# 7. مسارات المصادقة (Auth)
+# ─────────────────────────────────────────────────────────────
+@app.route('/api/auth/login', methods=['POST'])
+@csrf.exempt
+@limiter.limit("10 per minute")
+def login():
+    data = request.get_json(silent=True) or {}
+    username = str(data.get('username', '')).strip().lower()
+    password = str(data.get('password', ''))
+
+    if not username or not password:
+        return jsonify({'error': 'Username and password are required'}), 400
+
+    user = User.query.filter_by(username=username).first()
+    if not user or not user.check_password(password):
+        return jsonify({'error': 'Invalid credentials'}), 401
+
+    access_token = create_access_token(identity=username)
+    logger.info(f'User {username} logged in')
+    return jsonify({'access_token': access_token, 'is_admin': user.is_admin})
+
+
+@app.route('/api/auth/register', methods=['POST'])
+@csrf.exempt
+@limiter.limit("5 per hour")
+def register():
+    data = request.get_json(silent=True) or {}
+    username = str(data.get('username', '')).strip().lower()
+    password = str(data.get('password', ''))
+
+    if not username or len(password) < 8:
+        return jsonify({'error': 'Invalid input. Password must be >= 8 chars.'}), 400
+
+    if User.query.filter_by(username=username).first():
+        return jsonify({'error': 'User already exists'}), 409
+
+    user = User(username=username, is_admin=False)
+    user.set_password(password)
+    db.session.add(user)
+    db.session.commit()
+    logger.info(f'New user registered: {username}')
+    return jsonify({'message': 'User created successfully'}), 201
+
+# ─────────────────────────────────────────────────────────────
+# 8. مسارات المنتجات (Products)
+# ─────────────────────────────────────────────────────────────
 @app.route('/api/products', methods=['GET'])
+@cache.cached(timeout=60)
 def get_products():
-    products = get_all_products()
-    return jsonify(products)
+    try:
+        products = Product.query.all()
+        return jsonify([{
+            'id': p.id,
+            'name': p.name,
+            'category': p.category.name if p.category else None,
+            'price': float(p.price),
+            'icon': p.icon,
+            'image_url': p.image_url
+        } for p in products])
+    except Exception as e:
+        logger.error(f'Error fetching products: {e}')
+        return jsonify({'error': 'Failed to fetch products'}), 500
+
 
 @app.route('/api/products', methods=['POST'])
+@csrf.exempt
+@jwt_required()
+@admin_required
+@limiter.limit("30 per minute")
 def add_product():
-    data = request.get_json()
-    if not data or 'name' not in data or 'category' not in data or 'price' not in data:
-        return jsonify({'error': 'بيانات غير مكتملة'}), 400
-    name = data['name']
-    category = data['category']
-    price = float(data['price'])
-    icon = data.get('icon', 'bi bi-tag')
-    image_url = data.get('image_url', '')
+    data = request.get_json(silent=True) or {}
+    form = ProductForm(data=data)
+    if not form.validate():
+        return jsonify({'error': form.errors}), 400
+
     try:
-        new_product = add_product_to_db(name, category, price, icon, image_url)
-        return jsonify(new_product), 201
+        cat = Category.query.filter_by(name=form.category.data).first()
+        if not cat:
+            cat = Category(name=form.category.data)
+            db.session.add(cat)
+            db.session.flush()
+
+        product = Product(
+            name=form.name.data,
+            category_id=cat.id,
+            price=form.price.data,
+            icon=form.icon.data or 'bi bi-tag',
+            image_url=form.image_url.data
+        )
+        db.session.add(product)
+        db.session.commit()
+        cache.clear()
+        logger.info(f'Product added: {product.name} (ID: {product.id})')
+        return jsonify({
+            'id': product.id, 'name': product.name,
+            'category': product.category.name, 'price': float(product.price),
+            'icon': product.icon, 'image_url': product.image_url
+        }), 201
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        db.session.rollback()
+        logger.error(f'Error adding product: {e}')
+        return jsonify({'error': 'Failed to add product'}), 500
+
 
 @app.route('/api/products/<int:product_id>', methods=['PUT'])
+@csrf.exempt
+@jwt_required()
+@admin_required
+@limiter.limit("30 per minute")
 def update_product(product_id):
-    data = request.get_json()
-    name = data.get('name')
-    category = data.get('category')
-    price = float(data.get('price'))
-    icon = data.get('icon', 'bi bi-tag')
-    image_url = data.get('image_url', '')
+    product = Product.query.get_or_404(product_id)
+    data = request.get_json(silent=True) or {}
+    form = ProductForm(data=data)
+    if not form.validate():
+        return jsonify({'error': form.errors}), 400
+
     try:
-        updated = update_product_in_db(product_id, name, category, price, icon, image_url)
-        if updated:
-            return jsonify(updated)
-        else:
-            return jsonify({'error': 'المنتج غير موجود'}), 404
+        if form.category.data:
+            cat = Category.query.filter_by(name=form.category.data).first()
+            if not cat:
+                cat = Category(name=form.category.data)
+                db.session.add(cat)
+                db.session.flush()
+            product.category_id = cat.id
+
+        product.name = form.name.data or product.name
+        product.price = form.price.data if form.price.data is not None else product.price
+        product.icon = form.icon.data or product.icon
+        product.image_url = form.image_url.data or product.image_url
+
+        db.session.commit()
+        cache.clear()
+        logger.info(f'Product updated: {product.id}')
+        return jsonify({
+            'id': product.id, 'name': product.name,
+            'category': product.category.name, 'price': float(product.price),
+            'icon': product.icon, 'image_url': product.image_url
+        })
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        db.session.rollback()
+        logger.error(f'Error updating product: {e}')
+        return jsonify({'error': 'Failed to update product'}), 500
+
 
 @app.route('/api/products/<int:product_id>', methods=['DELETE'])
+@csrf.exempt
+@jwt_required()
+@admin_required
 def delete_product(product_id):
+    product = Product.query.get_or_404(product_id)
     try:
-        delete_product_from_db(product_id)
-        return jsonify({'message': 'تم حذف المنتج'}), 200
+        db.session.delete(product)
+        db.session.commit()
+        cache.clear()
+        logger.info(f'Product deleted: {product.id}')
+        return jsonify({'message': 'Product deleted successfully'})
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        db.session.rollback()
+        logger.error(f'Error deleting product: {e}')
+        return jsonify({'error': 'Failed to delete product'}), 500
 
-# ------------------ التصنيفات ------------------
+# ─────────────────────────────────────────────────────────────
+# 9. مسارات التصنيفات (Categories)
+# ─────────────────────────────────────────────────────────────
 @app.route('/api/categories', methods=['GET'])
+@cache.cached(timeout=120)
 def get_categories():
-    cats = get_all_categories()
-    return jsonify(cats)
+    try:
+        cats = Category.query.all()
+        return jsonify([c.name for c in cats])
+    except Exception as e:
+        logger.error(f'Error fetching categories: {e}')
+        return jsonify({'error': 'Failed to fetch categories'}), 500
+
 
 @app.route('/api/categories', methods=['POST'])
+@csrf.exempt
+@jwt_required()
+@admin_required
+@limiter.limit("30 per minute")
 def add_category():
-    data = request.get_json()
-    new_cat = data.get('name')
-    if not new_cat:
-        return jsonify({'error': 'اسم التصنيف مطلوب'}), 400
+    data = request.get_json(silent=True) or {}
+    form = CategoryForm(data=data)
+    if not form.validate():
+        return jsonify({'error': form.errors}), 400
+
+    if Category.query.filter_by(name=form.name.data).first():
+        return jsonify({'error': 'Category already exists'}), 409
+
     try:
-        add_category_to_db(new_cat)
-        return jsonify({'message': 'تمت الإضافة', 'categories': get_all_categories()}), 201
+        cat = Category(name=form.name.data)
+        db.session.add(cat)
+        db.session.commit()
+        cache.clear()
+        logger.info(f'Category added: {cat.name}')
+        return jsonify({'message': 'Category added', 'name': cat.name}), 201
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        db.session.rollback()
+        logger.error(f'Error adding category: {e}')
+        return jsonify({'error': 'Failed to add category'}), 500
+
 
 @app.route('/api/categories/<string:cat_name>', methods=['DELETE'])
+@csrf.exempt
+@jwt_required()
+@admin_required
 def delete_category(cat_name):
+    cat = Category.query.filter_by(name=cat_name).first_or_404()
     try:
-        delete_category_from_db(cat_name)
-        return jsonify({'message': 'تم الحذف', 'categories': get_all_categories()}), 200
+        db.session.delete(cat)
+        db.session.commit()
+        cache.clear()
+        logger.info(f'Category deleted: {cat.name}')
+        return jsonify({'message': 'Category deleted'})
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        db.session.rollback()
+        logger.error(f'Error deleting category: {e}')
+        return jsonify({'error': 'Failed to delete category'}), 500
 
-# ------------------ الطلبات ------------------
+# ─────────────────────────────────────────────────────────────
+# 10. مسارات الطلبات (Orders)
+# ─────────────────────────────────────────────────────────────
 @app.route('/api/orders', methods=['GET'])
+@csrf.exempt
+@jwt_required()
+@admin_required
 def get_orders():
-    orders = get_all_orders()
-    return jsonify(orders)
+    try:
+        orders = Order.query.order_by(Order.id.desc()).all()
+        return jsonify([{
+            'id': o.id,
+            'customerName': o.customer_name,
+            'phone': o.phone,
+            'address': o.address,
+            'notes': o.notes,
+            'items': o.items,
+            'total': float(o.total) if o.total else 0,
+            'status': o.status,
+            'createdAt': o.created_at.isoformat() if o.created_at else None
+        } for o in orders])
+    except Exception as e:
+        logger.error(f'Error fetching orders: {e}')
+        return jsonify({'error': 'Failed to fetch orders'}), 500
+
 
 @app.route('/api/orders', methods=['POST'])
+@csrf.exempt
+@limiter.limit("20 per minute")
 def create_order():
-    data = request.get_json()
-    customer_name = data.get('customerName')
-    address = data.get('address')
-    phone = data.get('phone')
-    notes = data.get('notes', '')
+    data = request.get_json(silent=True) or {}
+    form = OrderForm(data=data)
+    if not form.validate():
+        return jsonify({'error': form.errors}), 400
+
     items = data.get('items', [])
     total = data.get('total', 0)
+
+    if not isinstance(items, list):
+        return jsonify({'error': 'Items must be a list'}), 400
     try:
-        new_order = add_order_to_db(customer_name, address, phone, notes, items, total)
-        return jsonify(new_order), 201
+        total = float(total)
+    except (ValueError, TypeError):
+        return jsonify({'error': 'Total must be a number'}), 400
+
+    try:
+        order = Order(
+            customer_name=form.customerName.data,
+            address=form.address.data,
+            phone=form.phone.data,
+            notes=form.notes.data,
+            items=items,
+            total=total
+        )
+        db.session.add(order)
+        db.session.commit()
+        logger.info(f'Order created: {order.id}')
+        return jsonify({
+            'id': order.id,
+            'customerName': order.customer_name,
+            'total': float(order.total) if order.total else 0,
+            'status': order.status,
+            'createdAt': order.created_at.isoformat()
+        }), 201
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        db.session.rollback()
+        logger.error(f'Error creating order: {e}')
+        return jsonify({'error': 'Failed to create order'}), 500
+
 
 @app.route('/api/orders/<int:order_id>', methods=['PUT'])
+@csrf.exempt
+@jwt_required()
+@admin_required
 def update_order_status(order_id):
-    data = request.get_json()
-    new_status = data.get('status')
+    data = request.get_json(silent=True) or {}
+    order = Order.query.get_or_404(order_id)
+    new_status = str(data.get('status', '')).strip()
+    if not new_status or len(new_status) > 50:
+        return jsonify({'error': 'Invalid status'}), 400
+
     try:
-        updated = update_order_status(order_id, new_status)
-        if updated:
-            return jsonify(updated)
-        else:
-            return jsonify({'error': 'الطلب غير موجود'}), 404
+        order.status = new_status
+        db.session.commit()
+        logger.info(f'Order {order_id} status updated to {new_status}')
+        return jsonify({'id': order.id, 'status': order.status})
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        db.session.rollback()
+        logger.error(f'Error updating order: {e}')
+        return jsonify({'error': 'Failed to update order'}), 500
 
-# ------------------ صفحات HTML ------------------
-def read_html_file(filename):
-    try:
-        with open(filename, 'r', encoding='utf-8') as f:
-            return f.read()
-    except FileNotFoundError:
-        return f"<h1>الملف {filename} غير موجود. تأكد من وجوده في نفس المجلد.</h1>"
-
+# ─────────────────────────────────────────────────────────────
+# 11. مسارات الواجهة (Web Pages)
+# ─────────────────────────────────────────────────────────────
 @app.route('/')
-def home():
-    return render_template_string(read_html_file('home.html'))
-
 @app.route('/home.html')
-def home_page():
-    return render_template_string(read_html_file('home.html'))
+def home():
+    return render_template('store.html', csrf_token=generate_csrf())
+
 
 @app.route('/man.html')
 def admin_page():
-    return render_template_string(read_html_file('man.html'))
+    return render_template('admin.html', csrf_token=generate_csrf())
+
+# ─────────────────────────────────────────────────────────────
+# 12. تهيئة قاعدة البيانات
+# ─────────────────────────────────────────────────────────────
+def init_db():
+    with app.app_context():
+        db.create_all()
+        if not User.query.filter_by(username='admin').first():
+            admin = User(username='admin', is_admin=True)
+            admin.set_password('admin123')
+            db.session.add(admin)
+            db.session.commit()
+            logger.info('Default admin created: admin / admin123 (CHANGE IMMEDIATELY!)')
 
 if __name__ == '__main__':
-    print("✅ خادم HIBE STORE (مع PostgreSQL) يعمل على http://127.0.0.1:5000")
-    print("📦 واجهة المتجر: http://127.0.0.1:5000/home.html")
-    print("🛠️ لوحة الإدارة: http://127.0.0.1:5000/man.html")
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    init_db()
+    logger.info('HIBE STORE server starting...')
+    # threaded=True يسمح بمعالجة طلبات متعددة في نفس الوقت
+    app.run(host='0.0.0.0', port=5000, debug=False, threaded=True)
