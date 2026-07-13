@@ -1,11 +1,11 @@
 import os
 import logging
-import re
 from datetime import datetime, timedelta
 from functools import wraps
 
 from flask import Flask, render_template, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from flask
 from flask_jwt_extended import (
     JWTManager, create_access_token, jwt_required, get_jwt_identity
 )
@@ -25,6 +25,7 @@ load_dotenv()
 
 class Config:
     SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-change-me-in-production-64chars-long!!!')
+    # استخدام DATABASE_URL من Render (تُضاف تلقائياً)
     SQLALCHEMY_DATABASE_URI = os.getenv(
         'DATABASE_URL',
         'postgresql://postgres:postgres@localhost:5432/hibe_store'
@@ -451,4 +452,5 @@ def init_db():
 
 if __name__ == '__main__':
     init_db()
+    logger.info('HIBE STORE server starting...')
     app.run(host='0.0.0.0', port=5000, debug=False, threaded=True)
