@@ -267,17 +267,57 @@
         #closeOrderModal { background: rgba(0,0,0,0.08); color: var(--text-dark); margin-top: 8px; }
         .order-form label { font-size: 0.75rem; font-weight: 600; color: var(--text-dark); display: block; margin-bottom: 4px; margin-top: 4px; }
         .order-form .form-section { margin-bottom: 8px; }
-        .search-locations { position: relative; }
-        .search-results {
-            position: absolute; top: 100%; left: 0; right: 0; background: white;
-            border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            max-height: 150px; overflow-y: auto; z-index: 100; display: none;
-            border: 1px solid rgba(0,0,0,0.1);
+        /* ===== زر اختيار المنطقة/اللون (يفتح نافذة بتصميم الموقع) ===== */
+        .picker-btn {
+            width: 100%; display: flex; align-items: center; gap: 8px; text-align: right;
+            padding: 10px 12px; margin-bottom: 10px; border-radius: 8px;
+            border: 1px solid rgba(0,0,0,0.1); background: rgba(255,255,255,0.6);
+            font-family: inherit; font-size: 0.85rem; color: var(--text-dark); cursor: pointer;
         }
-        .search-results div { padding: 8px 12px; cursor: pointer; font-size: 0.8rem; border-bottom: 1px solid rgba(0,0,0,0.05); }
-        .search-results div:hover { background: var(--light-blue); }
-        .selected-location { background: var(--glass-blue); padding: 6px 10px; border-radius: 6px; font-size: 0.75rem; margin-bottom: 8px; display: none; align-items: center; gap: 6px; }
-        .selected-location i { color: var(--primary-blue); }
+        .picker-btn i:first-child { color: var(--primary-blue); }
+        .picker-btn span { flex: 1; }
+        .picker-btn i:last-child { font-size: 0.75rem; color: #999; }
+        .picker-btn span.picked { color: var(--primary-blue); font-weight: 700; }
+
+        /* ===== نافذة اختيار المنطقة ===== */
+        .location-modal-form, .color-modal-form { max-height: 80vh; display: flex; flex-direction: column; }
+        .modal-search-wrap { position: relative; margin-bottom: 12px; }
+        .modal-search-wrap i { position: absolute; top: 50%; right: 12px; transform: translateY(-50%); color: var(--primary-blue); font-size: 0.9rem; }
+        .modal-search-wrap input {
+            width: 100%; padding: 10px 36px 10px 12px; border-radius: 8px;
+            border: 1px solid rgba(0,0,0,0.1); font-family: inherit; font-size: 0.85rem;
+            background: rgba(255,255,255,0.6);
+        }
+        .location-modal-list { overflow-y: auto; flex: 1; margin-bottom: 10px; padding-left: 2px; }
+        .location-modal-list .governorate-card { cursor: default; }
+        .governorate-select-btn {
+            width: 100%; text-align: right; background: none; border: none; padding: 0;
+            font: inherit; cursor: pointer; display: flex; align-items: center; gap: 6px;
+        }
+        .district-tag-btn { cursor: pointer; transition: 0.15s; }
+        .district-tag-btn:hover, .district-tag-btn:active { background: var(--primary-blue); color: #fff; border-color: var(--primary-blue); }
+
+        /* ===== نافذة اختيار اللون ===== */
+        .color-modal-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; overflow-y: auto; }
+        .color-chip {
+            background: var(--glass-blue); border: 1px solid rgba(255,255,255,0.3);
+            color: var(--text-dark); font-family: inherit; font-size: 0.8rem; font-weight: 600;
+            padding: 8px 16px; border-radius: 20px; cursor: pointer; transition: 0.15s;
+        }
+        .color-chip:hover { background: rgba(26,115,232,0.25); }
+        .color-chip.active { background: var(--primary-blue); color: #fff; box-shadow: 0 2px 8px rgba(26,115,232,0.3); }
+
+        /* ===== شاشات التحميل (Skeleton) ===== */
+        .skeleton-card { background: var(--glass-white); backdrop-filter: blur(8px); border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.5); box-shadow: var(--shadow); }
+        .skeleton-img, .skeleton-line {
+            background: linear-gradient(90deg, rgba(200,210,230,0.35) 25%, rgba(200,210,230,0.7) 37%, rgba(200,210,230,0.35) 63%);
+            background-size: 400% 100%; animation: skeletonShimmer 1.4s ease infinite;
+        }
+        .skeleton-img { width: 100%; height: 0; padding-bottom: 55.555%; }
+        .skeleton-line { height: 12px; border-radius: 6px; margin: 12px 14px; }
+        .skeleton-line.short { width: 40%; }
+        .skeleton-line.price { width: 25%; height: 16px; }
+        @keyframes skeletonShimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
 
         body.dark-mode { background: linear-gradient(145deg, #0f172a 0%, #1e293b 100%); }
         body.dark-mode .glass-navbar, body.dark-mode .services-card, body.dark-mode .product-card, body.dark-mode .cart-item, body.dark-mode .cart-total, body.dark-mode .about-card, body.dark-mode .empty-message, body.dark-mode .order-form, body.dark-mode .bottom-nav, body.dark-mode .faq-item, body.dark-mode .delivery-locations-card { background: rgba(30,41,59,0.8); border-color: rgba(255,255,255,0.1); color: #e2e8f0; }
@@ -300,12 +340,15 @@
         body.dark-mode .faq-answer p, body.dark-mode .faq-answer ul { color: #94a3b8; }
         body.dark-mode .governorate-title { color: #e2e8f0; }
         body.dark-mode .district-tag { background: rgba(96,165,250,0.1); color: #94a3b8; border-color: rgba(255,255,255,0.1); }
-        body.dark-mode .search-results { background: #1e293b; border-color: rgba(255,255,255,0.1); }
-        body.dark-mode .search-results div { color: #e2e8f0; border-color: rgba(255,255,255,0.05); }
-        body.dark-mode .search-results div:hover { background: rgba(96,165,250,0.15); }
-        body.dark-mode .selected-location { background: rgba(96,165,250,0.15); color: #e2e8f0; }
         body.dark-mode .order-form label { color: #e2e8f0; }
         body.dark-mode .order-form h3 { color: #e2e8f0; }
+        body.dark-mode .picker-btn { background: rgba(255,255,255,0.08); color: #e2e8f0; border-color: rgba(255,255,255,0.1); }
+        body.dark-mode .picker-btn span.picked { color: #60a5fa; }
+        body.dark-mode .modal-search-wrap input { background: rgba(255,255,255,0.08); color: #e2e8f0; border-color: rgba(255,255,255,0.1); }
+        body.dark-mode .color-chip { background: rgba(96,165,250,0.15); color: #e2e8f0; }
+        body.dark-mode .color-chip:hover { background: rgba(96,165,250,0.3); }
+        body.dark-mode .color-chip.active { background: #60a5fa; color: #0f172a; }
+        body.dark-mode .skeleton-img, body.dark-mode .skeleton-line { background: linear-gradient(90deg, rgba(51,65,85,0.5) 25%, rgba(71,85,105,0.7) 37%, rgba(51,65,85,0.5) 63%); background-size: 400% 100%; }
     </style>
 </head>
 <body>
@@ -319,7 +362,7 @@
             <h1 class="hero-title">أهلاً بك في <span>HIBE STORE</span></h1>
             <p class="hero-subtitle">تسوق بذكاء، اختار بأناقة، وفر وقتك ومالك</p>
             <div class="hero-about">
-                <i class="bi bi-star-fill"></i> خدمات HIBE STORE
+                <i class="bi bi-star-fill"></i> HIBE STORE
                 <small>وجهتك المثالية للتسوق الذكي بجودة عالمية وأسعار محلية</small>
             </div>
             <div class="scroll-hint"><span>مرر للأسفل</span><i class="bi bi-chevron-down"></i></div>
@@ -327,8 +370,8 @@
 
         <div class="services-card" id="servicesCard">
             <p><i class="bi bi-star-fill blue-text"></i> <span class="blue-text">خدمات HIBE STORE</span><br>
-            نقدم لكم تشكيلات حصرية من الأزياء الصيفية بأجود الخامات الطبيعية.
-            نوفر خدمة توصيل سريعة داخل <strong>صنعاء</strong>، مع ضمان الجودة وأسعار تنافسية بالريال اليمني.</p>
+            نقدم لكم تشكيلات حصرية من الأزياء العصرية بأجود الخامات الطبيعية.
+            نوفر خدمة توصيل سريعة مع ضمان الجودة وأسعار تنافسية بالريال اليمني.</p>
             <a href="https://wa.me/734607101" target="_blank" class="complaint-btn"><i class="bi bi-exclamation-triangle"></i> للشكاوي والبلاغات</a>
         </div>
 
@@ -351,12 +394,12 @@
             </section>
             <section id="aboutPanel" class="about-panel">
                 <article class="about-card">
-                    <img src="https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=600&q=80" alt="أزياء صيفية">
-                    <h2><i class="bi bi-stars"></i> صيحة الصيف 2026</h2>
+                    <img src="https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=600&q=80" alt="تشكيلة أزياء متنوعة" loading="lazy" decoding="async">
+                    <h2><i class="bi bi-stars"></i> أحدث صيحات الموضة</h2>
                     <p>أزياء تناسب كل الأذواق .. راحة لا توصف. نقدم لكم <span class="about-gold">تشكيلات حصرية</span> من أحدث صيحات الموضة العالمية مع لمسة شرقية أصيلة.</p>
                 </article>
                 <article class="about-card">
-                    <img src="https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=600&q=80" alt="فخامة الاختيار">
+                    <img src="https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=600&q=80" alt="فخامة الاختيار" loading="lazy" decoding="async">
                     <h2><i class="bi bi-gem"></i> لماذا <span class="about-gold">HIBE STORE</span>؟</h2>
                     <ul class="features-list">
                         <li class="feature-item"><i class="bi bi-trophy"></i><span>فخامة الاختيار</span></li>
@@ -365,15 +408,15 @@
                     </ul>
                 </article>
                 <article class="about-card">
-                    <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?w=600&q=80" alt="جودة عالية">
+                    <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?w=600&q=80" alt="جودة عالية" loading="lazy" decoding="async">
                     <h2><i class="bi bi-droplet"></i> جودة تُلامس البشرة</h2>
-                    <p>أقمشة طبيعية: قطن ناعم، كتان أنيق، وخامات صديقة للبيئة. <strong>صيف 2026</strong> مع HIBE STORE.</p>
+                    <p>أقمشة طبيعية: قطن ناعم، كتان أنيق، وخامات صديقة للبيئة مع HIBE STORE.</p>
                 </article>
 
                 <!-- أماكن التوصيل -->
                 <div class="delivery-locations-card" id="deliveryLocationsCard">
                     <h2><i class="bi bi-geo-alt-fill"></i> مناطق التوصيل</h2>
-                    <div id="deliveryLocationsList"></div>
+                    <div id="deliveryLocationsList"><p style="text-align:center;color:#888;font-size:0.85rem;">جاري تحميل مناطق التوصيل...</p></div>
                 </div>
 
                 <!-- FAQ -->
@@ -454,15 +497,12 @@
 
             <!-- اختيار المكان -->
             <div class="form-section">
-                <label><i class="bi bi-geo-alt"></i> اختر منطقة التوصيل</label>
-                <div class="search-locations">
-                    <input type="text" id="locationSearch" placeholder="ابحث عن المحافظة أو المديرية..." autocomplete="off">
-                    <div class="search-results" id="searchResults"></div>
-                </div>
-                <div class="selected-location" id="selectedLocation">
-                    <i class="bi bi-check-circle-fill"></i>
-                    <span id="selectedLocationText"></span>
-                </div>
+                <label><i class="bi bi-geo-alt"></i> منطقة التوصيل</label>
+                <button type="button" class="picker-btn" id="openLocationModalBtn">
+                    <i class="bi bi-geo-alt"></i>
+                    <span id="locationPickerText">اختر منطقة التوصيل</span>
+                    <i class="bi bi-chevron-left"></i>
+                </button>
             </div>
 
             <input type="text" id="orderAddress" placeholder="تفاصيل العنوان (الحي، الشارع، المنزل)">
@@ -470,15 +510,39 @@
 
             <!-- اختيار اللون -->
             <div class="form-section" id="colorSection" style="display:none;">
-                <label><i class="bi bi-palette"></i> اختر اللون المتاح</label>
-                <select id="orderColor">
-                    <option value="">اختر اللون</option>
-                </select>
+                <label><i class="bi bi-palette"></i> اللون المتاح</label>
+                <button type="button" class="picker-btn" id="openColorModalBtn">
+                    <i class="bi bi-palette"></i>
+                    <span id="colorPickerText">اختر اللون</span>
+                    <i class="bi bi-chevron-left"></i>
+                </button>
             </div>
 
             <input type="text" id="orderNotes" placeholder="ملاحظات">
             <button id="sendWhatsappBtn">إرسال الطلب</button>
             <button id="closeOrderModal">إلغاء</button>
+        </div>
+    </div>
+
+    <!-- نافذة اختيار منطقة التوصيل -->
+    <div id="locationModal" class="modal-order">
+        <div class="order-form location-modal-form">
+            <h3><i class="bi bi-geo-alt-fill"></i> اختر منطقة التوصيل</h3>
+            <div class="modal-search-wrap">
+                <i class="bi bi-search"></i>
+                <input type="text" id="locationModalSearch" placeholder="ابحث عن محافظة، مديرية، حي أو شارع..." autocomplete="off">
+            </div>
+            <div class="location-modal-list" id="locationModalList"></div>
+            <button id="closeLocationModal">إغلاق</button>
+        </div>
+    </div>
+
+    <!-- نافذة اختيار اللون -->
+    <div id="colorModal" class="modal-order">
+        <div class="order-form color-modal-form">
+            <h3><i class="bi bi-palette-fill"></i> اختر اللون</h3>
+            <div class="color-modal-list" id="colorModalList"></div>
+            <button id="closeColorModal">إغلاق</button>
         </div>
     </div>
 
@@ -492,6 +556,9 @@
     var highlightedProductId = null;
     var deliveryRegions = [];
     var selectedLocationData = null;
+    var selectedColorValue = "";
+    var currentProductColors = [];
+    var locationSearchDebounce = null;
 
     // ==================== HELPERS ====================
     function showToast(msg) {
@@ -519,7 +586,17 @@
     }
 
     // ==================== FETCH ====================
+    function renderStoreSkeleton() {
+        var grid = document.getElementById("storePanel");
+        var html = "";
+        for (var i = 0; i < 3; i++) {
+            html += "<div class='skeleton-card'><div class='skeleton-img'></div><div class='skeleton-line'></div><div class='skeleton-line short'></div><div class='skeleton-line price'></div></div>";
+        }
+        grid.innerHTML = html;
+    }
+
     function fetchProducts() {
+        renderStoreSkeleton();
         fetch("/api/products")
             .then(function(res) { return res.json(); })
             .then(function(data) {
@@ -530,22 +607,32 @@
             })
             .catch(function(err) {
                 console.error("Fetch error:", err);
-                showToast("خطأ في تحميل المنتجات");
-                document.getElementById("storePanel").innerHTML =
-                    "<div class='empty-message'><i class='bi bi-wifi-off'></i><p>تعذر الاتصال بالخادم</p></div>";
+                showToast("تعذر تحميل المنتجات، يرجى المحاولة مجددًا");
+                var grid = document.getElementById("storePanel");
+                grid.innerHTML = "<div class='empty-message'><i class='bi bi-wifi-off'></i><p>تعذر الاتصال بالخادم</p>" +
+                    "<button class='complaint-btn' id='retryProductsBtn' style='margin-top:10px;border:none;'><i class='bi bi-arrow-clockwise'></i> إعادة المحاولة</button></div>";
+                var retryBtn = document.getElementById("retryProductsBtn");
+                if (retryBtn) retryBtn.onclick = fetchProducts;
             });
     }
 
     function fetchDeliveryRegions() {
+        var listEl = document.getElementById("deliveryLocationsList");
+        if (listEl) listEl.innerHTML = "<p style='text-align:center;color:#888;font-size:0.85rem;'><i class='bi bi-arrow-repeat'></i> جاري تحميل مناطق التوصيل...</p>";
         fetch("/api/delivery-regions")
             .then(function(res) { return res.json(); })
             .then(function(data) {
                 deliveryRegions = data || [];
                 renderDeliveryLocations();
-                setupLocationSearch();
             })
             .catch(function(err) {
                 console.error("Regions fetch error:", err);
+                if (listEl) {
+                    listEl.innerHTML = "<p style='text-align:center;color:#888;font-size:0.85rem;'>تعذر تحميل مناطق التوصيل</p>" +
+                        "<button class='complaint-btn' id='retryRegionsBtn' style='display:block;margin:8px auto 0;border:none;'><i class='bi bi-arrow-clockwise'></i> إعادة المحاولة</button>";
+                    var retryRegionsBtn = document.getElementById("retryRegionsBtn");
+                    if (retryRegionsBtn) retryRegionsBtn.onclick = fetchDeliveryRegions;
+                }
             });
     }
 
@@ -606,58 +693,146 @@
         container.innerHTML = html;
     }
 
-    // ==================== LOCATION SEARCH ====================
-    function setupLocationSearch() {
-        var searchInput = document.getElementById("locationSearch");
-        var resultsDiv = document.getElementById("searchResults");
-        var selectedDiv = document.getElementById("selectedLocation");
-        var selectedText = document.getElementById("selectedLocationText");
+    // ==================== LOCATION MODAL (اختيار المنطقة) ====================
+    function isRegionAvailable(region) {
+        return region.available !== false;
+    }
 
-        if (!searchInput) return;
+    function renderLocationModalList(query) {
+        var container = document.getElementById("locationModalList");
+        if (!container) return;
+        query = (query || "").trim().toLowerCase();
+        container.innerHTML = "";
 
-        searchInput.addEventListener("input", function() {
-            var query = this.value.trim().toLowerCase();
-            if (query.length < 1) {
-                resultsDiv.style.display = "none";
-                return;
+        if (deliveryRegions.length === 0) {
+            container.innerHTML = "<p style='text-align:center;color:#888;font-size:0.85rem;padding:14px 0;'>لا توجد مناطق توصيل متاحة حالياً</p>";
+            return;
+        }
+
+        var any = false;
+        for (var i = 0; i < deliveryRegions.length; i++) {
+            var region = deliveryRegions[i];
+            if (!isRegionAvailable(region)) continue;
+
+            var districts = region.districts || [];
+            var govMatches = !query || region.name.toLowerCase().indexOf(query) !== -1;
+            var matchedDistricts = [];
+            for (var d = 0; d < districts.length; d++) {
+                if (govMatches || districts[d].toLowerCase().indexOf(query) !== -1) {
+                    matchedDistricts.push(districts[d]);
+                }
             }
-            var matches = [];
-            for (var i = 0; i < deliveryRegions.length; i++) {
-                var region = deliveryRegions[i];
-                if (region.name.toLowerCase().indexOf(query) !== -1) {
-                    matches.push({ type: "governorate", name: region.name, full: region.name });
+            if (query && !govMatches && matchedDistricts.length === 0) continue;
+            any = true;
+
+            var card = document.createElement("div");
+            card.className = "governorate-card";
+
+            var titleBtn = document.createElement("button");
+            titleBtn.type = "button";
+            titleBtn.className = "governorate-title governorate-select-btn";
+            titleBtn.innerHTML = "<i class='bi bi-geo-alt-fill'></i> " + region.name;
+            titleBtn.onclick = (function(name) {
+                return function() { selectLocation(name); };
+            })(region.name);
+            card.appendChild(titleBtn);
+
+            if (matchedDistricts.length > 0) {
+                var distList = document.createElement("div");
+                distList.className = "districts-list";
+                for (var m = 0; m < matchedDistricts.length; m++) {
+                    var distBtn = document.createElement("button");
+                    distBtn.type = "button";
+                    distBtn.className = "district-tag district-tag-btn";
+                    distBtn.textContent = matchedDistricts[m];
+                    distBtn.onclick = (function(gov, dist) {
+                        return function() { selectLocation(gov + " - " + dist); };
+                    })(region.name, matchedDistricts[m]);
+                    distList.appendChild(distBtn);
                 }
-                var districts = region.districts || [];
-                for (var d = 0; d < districts.length; d++) {
-                    if (districts[d].toLowerCase().indexOf(query) !== -1) {
-                        matches.push({ type: "district", name: districts[d], full: region.name + " - " + districts[d] });
-                    }
-                }
-            }
-            if (matches.length > 0) {
-                resultsDiv.innerHTML = "";
-                for (var m = 0; m < Math.min(matches.length, 8); m++) {
-                    var div = document.createElement("div");
-                    div.textContent = matches[m].full;
-                    div.setAttribute("data-full", matches[m].full);
-                    div.onclick = function() {
-                        selectedLocationData = this.getAttribute("data-full");
-                        selectedText.textContent = selectedLocationData;
-                        selectedDiv.style.display = "flex";
-                        searchInput.value = "";
-                        resultsDiv.style.display = "none";
-                    };
-                    resultsDiv.appendChild(div);
-                }
-                resultsDiv.style.display = "block";
+                card.appendChild(distList);
             } else {
-                resultsDiv.style.display = "none";
+                var noDist = document.createElement("p");
+                noDist.className = "no-districts";
+                noDist.textContent = "لا توجد تفاصيل إضافية";
+                card.appendChild(noDist);
             }
-        });
+            container.appendChild(card);
+        }
 
-        searchInput.addEventListener("blur", function() {
-            setTimeout(function() { resultsDiv.style.display = "none"; }, 200);
+        if (!any) {
+            container.innerHTML = "<div class='empty-message' style='margin:0;padding:24px 12px;'><i class='bi bi-search'></i><p>لا توجد نتائج مطابقة</p></div>";
+        }
+    }
+
+    function selectLocation(full) {
+        selectedLocationData = full;
+        var textEl = document.getElementById("locationPickerText");
+        textEl.textContent = full;
+        textEl.classList.add("picked");
+        document.getElementById("locationModal").classList.remove("show");
+    }
+
+    function setupLocationModal() {
+        var openBtn = document.getElementById("openLocationModalBtn");
+        var closeBtn = document.getElementById("closeLocationModal");
+        var searchInput = document.getElementById("locationModalSearch");
+        if (!openBtn) return;
+
+        openBtn.onclick = function() {
+            searchInput.value = "";
+            renderLocationModalList("");
+            document.getElementById("locationModal").classList.add("show");
+        };
+        closeBtn.onclick = function() {
+            document.getElementById("locationModal").classList.remove("show");
+        };
+        searchInput.addEventListener("input", function() {
+            var val = this.value;
+            clearTimeout(locationSearchDebounce);
+            locationSearchDebounce = setTimeout(function() {
+                renderLocationModalList(val);
+            }, 200);
         });
+    }
+
+    // ==================== COLOR MODAL (اختيار اللون) ====================
+    function renderColorModalList() {
+        var container = document.getElementById("colorModalList");
+        if (!container) return;
+        container.innerHTML = "";
+        for (var i = 0; i < currentProductColors.length; i++) {
+            var chip = document.createElement("button");
+            chip.type = "button";
+            chip.className = "color-chip" + (currentProductColors[i] === selectedColorValue ? " active" : "");
+            chip.textContent = currentProductColors[i];
+            chip.onclick = (function(c) {
+                return function() { selectColor(c); };
+            })(currentProductColors[i]);
+            container.appendChild(chip);
+        }
+    }
+
+    function selectColor(c) {
+        selectedColorValue = c;
+        var textEl = document.getElementById("colorPickerText");
+        textEl.textContent = c;
+        textEl.classList.add("picked");
+        document.getElementById("colorModal").classList.remove("show");
+    }
+
+    function setupColorModal() {
+        var openBtn = document.getElementById("openColorModalBtn");
+        var closeBtn = document.getElementById("closeColorModal");
+        if (!openBtn) return;
+
+        openBtn.onclick = function() {
+            renderColorModalList();
+            document.getElementById("colorModal").classList.add("show");
+        };
+        closeBtn.onclick = function() {
+            document.getElementById("colorModal").classList.remove("show");
+        };
     }
 
     // ==================== CART ====================
@@ -903,30 +1078,30 @@
 
     // ==================== SETUP ORDER MODAL ====================
     function setupOrderModal(product) {
-        // Reset
+        // Reset location
         selectedLocationData = null;
-        document.getElementById("selectedLocation").style.display = "none";
-        document.getElementById("locationSearch").value = "";
+        var locationText = document.getElementById("locationPickerText");
+        locationText.textContent = "اختر منطقة التوصيل";
+        locationText.classList.remove("picked");
+
         document.getElementById("orderAddress").value = "";
         document.getElementById("orderName").value = "";
         document.getElementById("orderPhone").value = "";
         document.getElementById("orderNotes").value = "";
 
-        // Color selection
-        var colorSection = document.getElementById("colorSection");
-        var colorSelect = document.getElementById("orderColor");
-        colorSelect.innerHTML = '<option value="">اختر اللون</option>';
+        // Reset color
+        selectedColorValue = "";
+        var colorText = document.getElementById("colorPickerText");
+        colorText.textContent = "اختر اللون";
+        colorText.classList.remove("picked");
 
+        var colorSection = document.getElementById("colorSection");
+        currentProductColors = [];
         if (product && product.colors) {
             var colors = product.colors.split(/[،,]/).map(function(c) { return c.trim(); }).filter(function(c) { return c; });
             if (colors.length > 0) {
+                currentProductColors = colors;
                 colorSection.style.display = "block";
-                for (var i = 0; i < colors.length; i++) {
-                    var opt = document.createElement("option");
-                    opt.value = colors[i];
-                    opt.textContent = colors[i];
-                    colorSelect.appendChild(opt);
-                }
             } else {
                 colorSection.style.display = "none";
             }
@@ -1011,11 +1186,17 @@
         var name = document.getElementById("orderName").value.trim();
         var phone = document.getElementById("orderPhone").value.trim();
         if (!name || !phone) { showToast("يرجى إدخال الاسم والجوال"); return; }
+        if (!selectedLocationData) { showToast("يرجى اختيار منطقة التوصيل"); return; }
+        var colorSection = document.getElementById("colorSection");
+        if (colorSection.style.display === "block" && !selectedColorValue) {
+            showToast("يرجى اختيار اللون");
+            return;
+        }
 
-        var location = selectedLocationData || "لم يحدد";
+        var location = selectedLocationData;
         var address = document.getElementById("orderAddress").value.trim() || "لم يحدد";
         var notes = document.getElementById("orderNotes").value.trim() || "بدون ملاحظات";
-        var color = document.getElementById("orderColor").value || "لم يحدد";
+        var color = selectedColorValue || "لم يحدد";
 
         var details = "";
         if (pendingOrderData && pendingOrderData.type === "single") {
@@ -1124,6 +1305,8 @@
         document.getElementById("closeOrderModal").onclick = function() {
             document.getElementById("orderModal").classList.remove("show");
         };
+        setupLocationModal();
+        setupColorModal();
 
         var navBtns = document.querySelectorAll(".nav-btn");
         for (var i = 0; i < navBtns.length; i++) {
