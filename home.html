@@ -236,14 +236,29 @@
 
         /* ===== بطاقات المحافظات المنسدلة (Accordion) ===== */
         .governorate-card.collapsible-card { padding: 0; overflow: hidden; transition: all 0.3s ease; }
-        .governorate-header { padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .governorate-header { padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; border-radius: 8px; transition: background 0.15s; }
+        .governorate-header:hover { background: rgba(26,115,232,0.08); }
         .governorate-header .governorate-title { margin-bottom: 0; }
         .governorate-header .toggle-icon { color: var(--primary-blue); font-size: 0.85rem; transition: transform 0.3s ease; flex-shrink: 0; }
         .governorate-card.collapsible-card.open .toggle-icon { transform: rotate(180deg); }
         .governorate-body { max-height: 0; overflow: hidden; transition: max-height 0.4s ease, padding 0.4s ease; padding: 0 14px; }
         .governorate-card.collapsible-card.open .governorate-body { max-height: 700px; padding: 0 14px 14px 14px; }
         .governorate-body .districts-list { padding-right: 0; }
-        .whole-gov-btn { background: rgba(26,115,232,0.12); border-color: rgba(26,115,232,0.35); font-weight: 700; }
+
+        /* ===== بطاقة تواصل معنا ===== */
+        .contact-card { background: var(--glass-white); backdrop-filter: blur(10px); border-radius: 14px; padding: 18px; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.6); box-shadow: var(--shadow); }
+        .contact-card h2 { font-family: 'Tajawal', sans-serif; font-weight: 700; color: var(--text-dark); margin-bottom: 14px; font-size: 1.2rem; display: flex; align-items: center; gap: 8px; }
+        .contact-card h2 i { color: var(--primary-blue); }
+        .contact-links { display: flex; flex-direction: column; gap: 10px; }
+        .contact-link-item {
+            display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 10px;
+            background: rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.08); text-decoration: none;
+            color: var(--text-dark); font-weight: 700; font-size: 0.85rem; transition: 0.15s;
+        }
+        .contact-link-item:hover { background: rgba(26,115,232,0.12); border-color: rgba(26,115,232,0.3); transform: translateY(-1px); }
+        .contact-link-item i { font-size: 1.3rem; flex-shrink: 0; }
+        .contact-link-item.whatsapp-link i { color: #1fae59; }
+        .contact-link-item.telegram-link i { color: #1c8ad9; }
 
         .bottom-nav { position: fixed; bottom: 12px; left: 50%; transform: translateX(-50%); width: calc(100% - 60px); max-width: 420px; background: var(--glass-white); backdrop-filter: blur(20px); border-radius: 14px; z-index: 40; border: 1px solid rgba(255,255,255,0.5); box-shadow: var(--shadow); }
         .bottom-nav-list { display: flex; justify-content: space-around; padding: 4px 8px; list-style: none; }
@@ -263,12 +278,13 @@
         .order-form input, .order-form select, .order-form textarea {
             width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 8px;
             border: 1px solid rgba(0,0,0,0.1); font-family: inherit;
-            background: rgba(255,255,255,0.6); font-size: 0.85rem;
+            background: rgba(255,255,255,0.6); font-size: 0.85rem; color: var(--text-dark);
         }
+        .order-form input::placeholder, .modal-search-wrap input::placeholder { color: #8a8a9e; opacity: 1; }
         .order-form select { cursor: pointer; }
         .order-form textarea { resize: vertical; min-height: 60px; }
         .order-form button { background: var(--primary-blue); border: none; width: 100%; padding: 10px; border-radius: 8px; color: white; margin-top: 6px; cursor: pointer; font-family: inherit; font-size: 0.85rem; }
-        #closeOrderModal { background: rgba(0,0,0,0.08); color: var(--text-dark); margin-top: 8px; }
+        #closeOrderModal, #closeLocationModal, #closeColorModal { background: rgba(0,0,0,0.08); color: var(--text-dark); margin-top: 8px; }
         .order-form label { font-size: 0.75rem; font-weight: 600; color: var(--text-dark); display: block; margin-bottom: 4px; margin-top: 4px; }
         .order-form .form-section { margin-bottom: 8px; }
         /* ===== زر اختيار المنطقة/اللون (يفتح نافذة بتصميم الموقع) ===== */
@@ -332,7 +348,8 @@
         body.dark-mode .nav-btn { color: #94a3b8; }
         body.dark-mode .nav-btn.active { background: rgba(96,165,250,0.2); color: #60a5fa; }
         body.dark-mode .order-form input, body.dark-mode .order-form select, body.dark-mode .order-form textarea { background: rgba(255,255,255,0.08); color: #e2e8f0; border-color: rgba(255,255,255,0.1); }
-        body.dark-mode #closeOrderModal { background: rgba(255,255,255,0.1); color: #e2e8f0; }
+        body.dark-mode .order-form input::placeholder, body.dark-mode .modal-search-wrap input::placeholder { color: #8fa0b8; opacity: 1; }
+        body.dark-mode #closeOrderModal, body.dark-mode #closeLocationModal, body.dark-mode #closeColorModal { background: rgba(255,255,255,0.12); color: #f1f5f9; }
         body.dark-mode .product-img .img-fallback { background: rgba(96,165,250,0.1); color: #60a5fa; }
         body.dark-mode .faq-question { color: #e2e8f0; }
         body.dark-mode .faq-question:hover { background: rgba(96,165,250,0.15); }
@@ -340,11 +357,16 @@
         body.dark-mode .governorate-title { color: #e2e8f0; }
         body.dark-mode .district-tag { background: rgba(96,165,250,0.15); color: #cbd5e1; border-color: rgba(255,255,255,0.12); }
         body.dark-mode .district-tag-btn:hover, body.dark-mode .district-tag-btn:active { background: #60a5fa; color: #0f172a; border-color: #60a5fa; }
-        body.dark-mode .whole-gov-btn { background: rgba(96,165,250,0.2); border-color: rgba(96,165,250,0.4); color: #e2e8f0; }
         body.dark-mode .no-districts { color: #94a3b8; }
         body.dark-mode .muted-text { color: #94a3b8; }
         body.dark-mode .category-btn:hover { background: rgba(255,255,255,0.35); }
-        body.dark-mode .governorate-header:hover { background: rgba(96,165,250,0.08); }
+        body.dark-mode .governorate-header:hover { background: rgba(96,165,250,0.1); }
+        body.dark-mode .contact-card { background: rgba(30,41,59,0.8); border-color: rgba(255,255,255,0.1); }
+        body.dark-mode .contact-card h2 { color: #e2e8f0; }
+        body.dark-mode .contact-link-item { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.12); color: #e2e8f0; }
+        body.dark-mode .contact-link-item:hover { background: rgba(96,165,250,0.2); border-color: rgba(96,165,250,0.4); }
+        body.dark-mode .contact-link-item.whatsapp-link i { color: #34d67a; }
+        body.dark-mode .contact-link-item.telegram-link i { color: #4fb6ee; }
         body.dark-mode .order-form label { color: #e2e8f0; }
         body.dark-mode .order-form h3 { color: #e2e8f0; }
         body.dark-mode .picker-btn { background: rgba(255,255,255,0.08); color: #e2e8f0; border-color: rgba(255,255,255,0.1); }
@@ -415,6 +437,25 @@
                 <div class="delivery-locations-card" id="deliveryLocationsCard">
                     <h2><i class="bi bi-geo-alt-fill"></i> مناطق التوصيل</h2>
                     <div id="deliveryLocationsList"><p class="muted-text">جاري تحميل مناطق التوصيل...</p></div>
+                </div>
+
+                <!-- تواصل معنا -->
+                <div class="contact-card" id="contactCard">
+                    <h2><i class="bi bi-headset"></i> تواصل معنا</h2>
+                    <div class="contact-links">
+                        <a href="https://wa.me/967734607101" target="_blank" class="contact-link-item whatsapp-link">
+                            <i class="bi bi-whatsapp"></i>
+                            <span>واتساب: 967734607101+</span>
+                        </a>
+                        <a href="https://wa.me/967730577358" target="_blank" class="contact-link-item whatsapp-link">
+                            <i class="bi bi-whatsapp"></i>
+                            <span>واتساب: 967730577358+</span>
+                        </a>
+                        <a href="https://t.me/Evile_Prompts" target="_blank" class="contact-link-item telegram-link">
+                            <i class="bi bi-telegram"></i>
+                            <span>قناة المطور على تلجرام</span>
+                        </a>
+                    </div>
                 </div>
 
                 <!-- FAQ -->
@@ -763,29 +804,26 @@
             var body = document.createElement("div");
             body.className = "governorate-body";
 
-            var distList = document.createElement("div");
-            distList.className = "districts-list";
-
-            var wholeBtn = document.createElement("button");
-            wholeBtn.type = "button";
-            wholeBtn.className = "district-tag district-tag-btn whole-gov-btn";
-            wholeBtn.innerHTML = "<i class='bi bi-check2-circle'></i> كل " + region.name;
-            wholeBtn.onclick = (function(name) {
-                return function() { selectLocation(name); };
-            })(region.name);
-            distList.appendChild(wholeBtn);
-
-            for (var m = 0; m < matchedDistricts.length; m++) {
-                var distBtn = document.createElement("button");
-                distBtn.type = "button";
-                distBtn.className = "district-tag district-tag-btn";
-                distBtn.textContent = matchedDistricts[m];
-                distBtn.onclick = (function(gov, dist) {
-                    return function() { selectLocation(gov + " - " + dist); };
-                })(region.name, matchedDistricts[m]);
-                distList.appendChild(distBtn);
+            if (matchedDistricts.length > 0) {
+                var distList = document.createElement("div");
+                distList.className = "districts-list";
+                for (var m = 0; m < matchedDistricts.length; m++) {
+                    var distBtn = document.createElement("button");
+                    distBtn.type = "button";
+                    distBtn.className = "district-tag district-tag-btn";
+                    distBtn.textContent = matchedDistricts[m];
+                    distBtn.onclick = (function(gov, dist) {
+                        return function() { selectLocation(gov + " - " + dist); };
+                    })(region.name, matchedDistricts[m]);
+                    distList.appendChild(distBtn);
+                }
+                body.appendChild(distList);
+            } else {
+                var noDist = document.createElement("p");
+                noDist.className = "no-districts";
+                noDist.textContent = "لا توجد مناطق تفصيلية متاحة لهذه المحافظة حالياً";
+                body.appendChild(noDist);
             }
-            body.appendChild(distList);
             card.appendChild(body);
             container.appendChild(card);
         }
